@@ -67,13 +67,13 @@
 ## 📐 설계문서
 <details>
   <summary><h3>모듈 설계</h3></summary>
-  <img src="https://github.com/yuapi/TravelMakers/assets/doc/ComponentDiagram">
+  <img src="https://github.com/yuapi/TravelMakers/blob/main/assets/doc/ComponentDiagram.png">
 </details>
 <details>
   <summary><h3>데이터베이스 설계</h3></summary>
-  <img src="https://github.com/yuapi/TravelMakers/assets/doc/ERDiagram">
+  <img src="https://github.com/yuapi/TravelMakers/blob/main/assets/doc/ERDiagram.png">
 </details>
 <details>
   <summary><h3>AWS 서버 설계</h3></summary>
-  <img src="https://github.com/yuapi/TravelMakers/assets/doc/AWSDiagram">
+  <img src="https://github.com/yuapi/TravelMakers/blob/main/assets/doc/AWSDiagram.png">
 </details>
