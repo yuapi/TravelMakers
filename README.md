@@ -63,3 +63,17 @@
   <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=MySQL&logoColor=white">
   <img src="https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black">
 </div>
+
+## 📐 설계문서
+<details>
+  <summary><h3>모듈 설계</h3></summary>
+  <img src="https://github.com/yuapi/TravelMakers/assets/doc/ComponentDiagram">
+</details>
+<details>
+  <summary><h3>데이터베이스 설계</h3></summary>
+  <img src="https://github.com/yuapi/TravelMakers/assets/doc/ERDiagram">
+</details>
+<details>
+  <summary><h3>AWS 서버 설계</h3></summary>
+  <img src="https://github.com/yuapi/TravelMakers/assets/doc/AWSDiagram">
+</details>
