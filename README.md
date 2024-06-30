@@ -19,8 +19,8 @@
 <table align="center">
   <tr>
     <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-      <a href=https://github.com/>
-        <img src=https://avatars.githubusercontent.com/u/25703569?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=""/>
+      <a href=https://github.com/rlagpqls0322>
+        <img src=https://avatars.githubusercontent.com/u/173909092?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=""/>
         <br />
         <sub style="font-size:14px"><b>김혜빈</b></sub>
       </a>
@@ -33,15 +33,15 @@
       </a>
     </td>
     <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-      <a href=https://github.com/>
-        <img src=https://avatars.githubusercontent.com/u/25703569?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=""/>
+      <a href=https://github.com/ShinDm2158083>
+        <img src=https://avatars.githubusercontent.com/u/113962026?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=""/>
         <br />
         <sub style="font-size:14px"><b>신동민</b></sub>
       </a>
     </td>
     <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-      <a href=https://github.com/>
-        <img src=https://avatars.githubusercontent.com/u/25703569?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=""/>
+      <a href=https://github.com/dhksgh8417>
+        <img src=https://avatars.githubusercontent.com/u/173910046?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=""/>
         <br />
         <sub style="font-size:14px"><b>조완호</b></sub>
       </a>
