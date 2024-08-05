@@ -1,0 +1,62 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: yuapi
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: travelmakers
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: postAPI
+
+custom:
+  config: ${file(../config.json)}
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-northeast-2
+  vpc:
+    securityGroupIds:
+      - sg-0995535e683e65d19
+    subnetIds:
+      - subnet-0aaca329f5360fa31
+      - subnet-02b88e664a6ec52d3
+      - subnet-0430166d40af9424c
+      - subnet-050e319996f20b265
+  deploymentBucket:
+    name: ${self:custom.config.aws.bucketName}
+  environment:
+    DB_HOST: ${self:custom.config.db.DB_HOST}
+    DB_USER: ${self:custom.config.db.DB_USER}
+    DB_PASSWORD: ${self:custom.config.db.DB_PASSWORD}
+    DB_NAME: ${self:custom.config.db.DB_NAME}
+    DB_PORT: ${self:custom.config.db.DB_PORT}
+
+functions:
+  createPost:
+    handler: handler.createPost
+    events:
+      - httpApi:
+          path: /api/post
+          method: post
+  readPost:
+    handler: handler.readPost
+    events:
+      - httpApi:
+          path: /api/post/{postId}
+          method: get
+  updatePost:
+    handler: handler.updatePost
+    events:
+      - httpApi:
+          path: /api/post/{postId}
+          method: put
+  deletePost:
+    handler: handler.deletePost
+    events:
+      - httpApi:
+          path: /api/post/{postId}
+          method: delete
+  listPosts:
+    handler: handler.listPosts
+    events:
+      - httpApi:
+          path: /api/post
+          method: get
