@@ -18,11 +18,14 @@ const DISCOVERY_DOC = {
 };
 
 interface UserInfo {
-  properties: {
-    nickname: string;
-    profile_image: string;
-  };
-}
+	properties: {
+	  nickname: string;
+	  profile_image: string;
+	};
+	kakao_account: { // 변경
+	  email: string;
+	};
+  }  
 
 export default function LoginScreen() {
 	const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -31,7 +34,7 @@ export default function LoginScreen() {
 	const [request, response, promptAsync] = AuthSession.useAuthRequest(
 	  {
       clientId: kakao_api_key,
-      scopes: ['profile_nickname', 'profile_image'],
+	  scopes: ['profile_nickname', 'profile_image', 'account_email'], // 변경
       redirectUri: REDIRECT_URI,
       responseType: 'code',
 	  },
@@ -76,6 +79,7 @@ export default function LoginScreen() {
         <View style={styles.userInfo}>
           <Image source={{ uri: userInfo.properties.profile_image }} style={styles.profileImage} />
           <Text style={styles.userName}>{userInfo.properties.nickname}</Text>
+		  <Text style={styles.userEmail}>{userInfo.kakao_account.email}</Text>   {/* 변경 */}
         </View>
       ) : (
         <TouchableOpacity style={styles.loginButton} onPress={() => promptAsync()}>
@@ -125,8 +129,8 @@ const styles = StyleSheet.create({
 		marginBottom: 20,
 	  },
 	  kakaoLogo: {
-		width: 200,  // or any desired width
-		height: 40,  // or any desired height
+		width: 200, 
+		height: 40, 
 	  },
 	  userInfo: {
 		alignItems: 'center',
