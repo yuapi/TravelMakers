@@ -1,3 +1,7 @@
 {
-	"kakao_api_key": "<Kakao REST API Key>"
+	"Cognito": {
+		"userPoolClientId": "<UserPool-Client-Id>",
+		"userPoolId": "<UserPool-Id>",
+		"domain": "<OAuth-Domain>"
+	}
 }
