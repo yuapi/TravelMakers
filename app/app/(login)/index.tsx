@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Image } from 'react-native';
 import * as AuthSession from 'expo-auth-session';
 import { Text, View } from '@/components/Themed';
-import { kakao_api_key } from '@/config.json';  
-import { Link } from 'expo-router';
 
+import { Link } from 'expo-router';
+const kakao_api_key = 'test';
 const REDIRECT_URI = AuthSession.makeRedirectUri();
 const KAKAO_AUTH_URL = 'https://kauth.kakao.com/oauth/authorize';
 const TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
