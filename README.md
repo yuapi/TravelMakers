@@ -3,6 +3,8 @@
 
 해외 여행지 추천 웹 앱 프로젝트
 
+[백엔드 프로젝트: TravelMakers API V1](https://github.com/yuapi/tmAPIv1)
+
 ## 📝 프로젝트 소개
 ### 문제
 1. 기존의 규칙 기반 추천 시스템은 사용자의 선호도를 잘 반영하지 못함
