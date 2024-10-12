@@ -131,7 +131,7 @@ export default function QtwoScreen() {
           </View>
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.NextBottom}>
-          <Link href='/question1'>
+          <Link href='/recommendation'>
             <Text style={styles.BottomText}>확인</Text>
           </Link>
         </TouchableOpacity>

@@ -3,12 +3,12 @@ import { Stack } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 
 
-export default function LoginLayout() {
+export default function RecommendationLayout() {
   const colorScheme = useColorScheme();
 
   return (
 	<Stack>
-	  <Stack.Screen name="login" options={{ headerShown: false }} />
+	  <Stack.Screen name="recommendation" options={{ headerShown: false }} />
 	</Stack>
   );
 }
