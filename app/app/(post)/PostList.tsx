@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 
 interface Post {
   id: string;
@@ -19,8 +20,13 @@ interface PostListProps {
 
 const { width } = Dimensions.get('window');
 
-const PostList = ({ navigation, route }: PostListProps) => {
-  const [posts, setPosts] = useState<Post[]>([]);
+const PostList = () => {
+  const [posts, setPosts] = useState<Post[]>([{
+    id: "1",
+    title: "TestPost",
+    author: "Tester"
+  }]);
+  const { post } = useLocalSearchParams();
 
   const loadPosts = async () => {
     try {
@@ -37,31 +43,45 @@ const PostList = ({ navigation, route }: PostListProps) => {
     loadPosts(); // 컴포넌트가 마운트될 때 게시글 로드
   }, []);
 
-  useEffect(() => {
-    if (route.params?.refresh) {
-      loadPosts(); // 새 게시글 작성 후 목록 갱신
-    }
-  }, [route.params?.refresh]);
+  // useEffect(() => {
+  //   if (route.params?.refresh) {
+  //     loadPosts(); // 새 게시글 작성 후 목록 갱신
+  //   }
+  // }, [route.params?.refresh]);
 
-  const handlePressPost = (post: Post) => {
-    navigation.navigate('PostDetail', { post });
-  };
+  // const handlePressPost = (post: Post) => {
+  //   Link('PostDetail', { post });
+  // };
+
+  // 테스트용 삭제 필
+  const tpost: string = JSON.stringify({
+    id: '1',
+    title: 'test01',
+    author: 'tester01',
+    content: 'testing'
+  })
 
   return (
     <View style={styles.container}>
-      <FlatList
+      {posts.length > 0 ? <FlatList
         data={posts}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.post} onPress={() => handlePressPost(item)}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.author}>작성자: {item.author}</Text>
+          <TouchableOpacity style={styles.post} >
+            <Link href={{ pathname: "/postdetail", params: { item: JSON.stringify(item) }}}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.author}>작성자: {item.author}</Text>
+            </Link>
           </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
       />
-      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('PostForm', { post: null })}>
+      : <Text>표시할 내용이 없습니다.</Text>}
+      <TouchableOpacity style={styles.addButton} onPress={() => router.navigate('/postform')}>
         <Text style={styles.addButtonText}>새 게시글 작성</Text>
       </TouchableOpacity>
+      <Link href={{ pathname: "/postdetail", params: { item: tpost }}}>
+        <Text>테스트</Text>
+      </Link>
     </View>
   );
 };

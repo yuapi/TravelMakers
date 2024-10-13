@@ -24,6 +24,7 @@
     "@react-native-community/datetimepicker": "8.0.1",
     "@react-navigation/native": "^6.0.2",
     "aws-amplify": "^6.5.1",
+    "axios": "^1.7.7",
     "expo": "~51.0.24",
     "expo-asset": "~10.0.10",
     "expo-constants": "~16.0.2",

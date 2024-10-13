@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { Amplify } from 'aws-amplify';
 import { Hub } from "@aws-amplify/core";
@@ -20,8 +20,8 @@ Amplify.configure({
 				oauth: {
 					domain: cognito.domain,
 					scopes: ['openid', 'email', 'profile'],
-					redirectSignIn: [Linking.createURL('')],
-					redirectSignOut: [Linking.createURL('')],
+					redirectSignIn: [Linking.createURL('main')],
+					redirectSignOut: [Linking.createURL('index')],
 					responseType: 'code'
 				}
 			}
@@ -30,35 +30,38 @@ Amplify.configure({
 })
 
 export default function LoginScreen() {
-	const [user, setUser] = useState<AuthUser | null>(null);
-	const [error, setError] = useState<unknown>(null);
-	const [customState, setCustomState] = useState<string | null>(null);
+	// const [user, setUser] = useState<AuthUser | null>(null);
+	// const [error, setError] = useState<unknown>(null);
+	// const [customState, setCustomState] = useState<string | null>(null);
 	const [fontsLoaded] = useFonts({
 		'Jua-Regular': require('../../assets/fonts/Jua-Regular.ttf'),
 	});
 
 	useEffect(() => {
-		const unsubscribe = Hub.listen("auth", ({ payload }) => {
-			switch (payload.event) {
-				case "signInWithRedirect":
-					getUser();
-					break;
-				case "signInWithRedirect_failure":
-					setError("An error has occurred during the OAuth flow.");
-					break;
-				case "customOAuthState":
-					setCustomState(payload.data);
-					break;
-			}
-		});
 		getUser();
-		return unsubscribe;
+		// const unsubscribe = Hub.listen("auth", async ({ payload }) => {
+		// 	switch (payload.event) {
+		// 		case "signInWithRedirect":
+		// 			await getUser();
+		// 			router.replace('/main')
+		// 			break;
+		// 		case "signInWithRedirect_failure":
+		// 			console.log("An error has occurred during the OAuth flow.");
+		// 			break;
+		// 		case "customOAuthState":
+		// 			console.log(payload.data);
+		// 			break;
+		// 	}
+		// });
+		// //getUser();
+		// return unsubscribe;
 	}, []);
 
 	const getUser = async (): Promise<void> => {
 		try {
 			const currentUser = await getCurrentUser();
-			setUser(currentUser);
+			router.replace('/main')
+			//setUser(currentUser);
 		} catch (error) {
 			console.error(error);
 			console.log("Not signed in");
@@ -77,18 +80,11 @@ export default function LoginScreen() {
 				<Text style={styles.subtitle}>어디로 떠날지 모르겠을땐?</Text>
 			</View>
 			<TouchableOpacity style={styles.questionButton}>
-				<Link href='/question1' style={styles.questionText}>Question1 테스트</Link>
+				<Link href='/main' style={styles.questionText}>Question1 테스트</Link>
 			</TouchableOpacity>
-			{user ? (
-				<View style={styles.userInfo}>
-					<Text style={styles.userName}>{user.username}</Text>
-					<Button title="Sign Out" onPress={() => { signOut(); setUser(null) }} />
-				</View>
-			) : (
-				<TouchableOpacity style={styles.loginButton} onPress={() => signInWithRedirect({ provider: 'Google' })}>
-					<Image source={require('../../assets/images/web_light_sq_ctn.png')} resizeMode="contain" style={styles.googleLogo} />
-				</TouchableOpacity>
-			)}
+			<TouchableOpacity style={styles.loginButton} onPress={() => signInWithRedirect({ provider: 'Google' })}>
+				<Image source={require('../../assets/images/web_light_sq_ctn.png')} resizeMode="contain" style={styles.googleLogo} />
+			</TouchableOpacity>
 			<Text style={styles.footerText}>
 				------------------- 
 				<Text style={styles.snsText}> SNS 계정으로 간편 가입 </Text>

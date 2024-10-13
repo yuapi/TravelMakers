@@ -1,11 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import { Title, Caption } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { signOut } from '@aws-amplify/auth';
+
+interface MyData {
+  nickname: string
+  email: string
+  gender: string
+  birthday: string
+  locale: string
+}
 
 export default function MyPage() {
+	const [user, setUser] = useState<MyData | null>(null);
+
+  useEffect(() => {
+    getMyData()
+	}, []);
+
+  const getMyData = async (): Promise<void> => {
+    const resUser: string = await AsyncStorage.getItem('user') ?? "";
+    const userdata = JSON.parse(resUser);
+
+    const mydata: MyData = {
+      nickname: userdata.nickname,
+      email: userdata.email,
+      gender: userdata.gender,
+      birthday: userdata.birthday,
+      locale: userdata.locale
+    }
+    console.log(userdata)
+    setUser(mydata);
+  }
+
   const router = useRouter();
   const [fontsLoaded] = useFonts({
     'Jua-Regular': require('../../assets/fonts/Jua-Regular.ttf'),
@@ -34,10 +65,9 @@ export default function MyPage() {
     Alert.alert('로그아웃', '로그아웃 하시겠습니까?', [
       { text: '취소', style: 'cancel' },
       { 
-        text: '로그아웃', 
-        onPress: () => {
-          console.log('로그아웃 처리');
-          router.replace('/login');
+        text: '로그아웃',
+        onPress: async () => {
+          await signOut();
         }
       },
     ]);
@@ -52,7 +82,16 @@ export default function MyPage() {
       <View style={styles.header}>
         <Title style={styles.title}>마이 페이지</Title>
         <View style={styles.nicknameContainer}>
-          <Text style={styles.nickname}>닉네임: 사용자 이름</Text>
+          <Text style={styles.nickname}>닉네임: {user?.nickname ?? "불러오는 중.."}</Text>
+        </View>
+        <View style={styles.nicknameContainer}>
+          <Text style={styles.nickname}>이메일: {user?.email ?? "불러오는 중.."}</Text>
+        </View>
+        <View style={styles.nicknameContainer}>
+          <Text style={styles.nickname}>성별: {user?.gender == "Male" ? "남자" : user?.gender == "Female" ? "여자" : "비공개"}</Text>
+        </View>
+        <View style={styles.nicknameContainer}>
+          <Text style={styles.nickname}>생년월일: {user?.birthday ?? ""}</Text>
         </View>
       </View>
 

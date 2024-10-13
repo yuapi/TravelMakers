@@ -8,9 +8,9 @@ export default function PostLayout() {
 
   return (
 	<Stack>
-	  <Stack.Screen name="PostDetail" options={{ headerShown: false }} />
-	  <Stack.Screen name="PostForm" options={{ headerShown: false }} />
-    <Stack.Screen name="PostList" options={{ headerShown: false }} />
+		<Stack.Screen name="postlist" options={{ headerShown: false }} />
+		<Stack.Screen name="postdetail" options={{ headerShown: false }} />
+		<Stack.Screen name="postform" options={{ headerShown: false }} />
 	</Stack>
   );
 }

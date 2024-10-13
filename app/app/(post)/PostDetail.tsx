@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, TextInput, Button, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 interface Post {
   id: string;
@@ -19,10 +20,21 @@ interface PostDetailProps {
   navigation: any;
 }
 
-const PostDetail: React.FC<PostDetailProps> = ({ route, navigation }) => {
-  const { post } = route.params;
+const PostDetail = () => {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const item: string = params.item; // 타입 가능성 오류로 빨간 밑줄 있을 수도 있는데, 일단 무시해도 됩니다.
+  const post: Post = JSON.parse(item);
+  console.log(post)
   const [comments, setComments] = useState<{ id: string; text: string }[]>([]);
   const [commentText, setCommentText] = useState<string>('');
+
+  // const post = {
+  //   id: '1',
+  //   title: 'test01',
+  //   author: 'tester01',
+  //   content: 'testing'
+  // }
 
   const loadComments = async () => {
     try {
@@ -43,9 +55,9 @@ const PostDetail: React.FC<PostDetailProps> = ({ route, navigation }) => {
     }
   };
 
-  const handleEdit = () => {
-    navigation.navigate('PostForm', { post });
-  };
+  // const handleEdit = () => {
+  //   navigation.navigate('PostForm', { post });
+  // };
 
   const handleDelete = async () => {
     Alert.alert(
@@ -61,7 +73,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ route, navigation }) => {
             const updatedPosts = postsArray.filter((item: { id: string; }) => item.id !== post.id);
             await AsyncStorage.setItem('posts', JSON.stringify(updatedPosts));
 
-            navigation.navigate('PostList', { refresh: true });
+            router.push({ pathname: "/postlist"});
           } catch (error) {
             console.error("게시글 삭제 실패:", error);
           }
@@ -90,7 +102,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ route, navigation }) => {
     <View style={styles.container}>
       <Text> </Text>
       <View style={styles.topBar}>
-        <Ionicons name="pencil" size={24} color="black" onPress={handleEdit} style={styles.icon} />
+        {/* <Ionicons name="pencil" size={24} color="black" onPress={handleEdit} style={styles.icon} /> */}
         <Ionicons name="trash" size={24} color="red" onPress={handleDelete} style={styles.icon} />
       </View>
 

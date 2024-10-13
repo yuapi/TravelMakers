@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
+import { router } from 'expo-router';
 
 interface Post {
   id: string;
@@ -23,7 +24,7 @@ interface PostFormProps {
 }
 
 // React.FC 대신 일반 함수형 컴포넌트로 변경
-const PostForm = ({ route, navigation }: PostFormProps) => {
+const PostForm = () => {
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [post, setPost] = useState<Post | null>(null);
@@ -31,14 +32,14 @@ const PostForm = ({ route, navigation }: PostFormProps) => {
     'Jua-Regular': require('../../assets/fonts/Jua-Regular.ttf'),
   });
 
-  useEffect(() => {
-    if (route.params?.post) {
-      const { post } = route.params;
-      setPost(post);
-      setTitle(post.title);
-      setContent(post.content);
-    }
-  }, [route.params?.post]);
+  // useEffect(() => {
+  //   if (route.params?.post) {
+  //     const { post } = route.params;
+  //     setPost(post);
+  //     setTitle(post.title);
+  //     setContent(post.content);
+  //   }
+  // }, [route.params?.post]);
 
   const handleSave = async () => {
     if (!title || !content) {
@@ -68,7 +69,7 @@ const PostForm = ({ route, navigation }: PostFormProps) => {
       }
 
       // PostList로 이동하면서 상태 업데이트
-      navigation.navigate('PostList', { refresh: true });
+      router.push({ pathname: "/postlist"});
     } catch (error) {
       console.error("게시글 저장 실패:", error);
     }
