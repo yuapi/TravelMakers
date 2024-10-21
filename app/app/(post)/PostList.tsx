@@ -89,41 +89,48 @@ const PostList = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#F7FFFF', // 배경색을 로그인 페이지와 동일하게 설정
+    padding: 16,
+    paddingTop: 70,
+    backgroundColor: '#F9FFFF', // 배경색을 QoneScreen과 동일하게 설정
   },
   post: {
-    marginBottom: 20,
-    padding: 15,
+    marginBottom: 12,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: '#fff', // 게시글 배경색
+    borderRadius: 8,
+    backgroundColor: '#ffffff', // 게시글 배경색
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 1,
   },
   title: {
-    fontSize: 20, // 글씨 크기를 크게 조정
-    fontWeight: 'bold',
-    fontFamily: 'Jua-Regular', // 글꼴을 Jua-Regular로 설정
-    color: '#007AFF', // 텍스트 색상
+    fontSize: 20,
+    fontWeight: '700',
+    fontFamily: 'Jua-Regular',
+    color: '#007aff',
   },
   author: {
-    fontSize: 16, // 글씨 크기를 적절히 조정
+    fontSize: 16,
     color: '#555',
-    fontFamily: 'Jua-Regular', // 글꼴을 Jua-Regular로 설정
+    fontFamily: 'Jua-Regular',
   },
   addButton: {
     marginTop: 20,
-    padding: 15,
-    backgroundColor: '#007AFF', // 버튼 색상
-    borderRadius: 5,
+    padding: 12,
+    backgroundColor: '#007aff', // 버튼 색상
+    borderRadius: 8,
     alignItems: 'center',
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 18, // 버튼 텍스트 크기 조정
-    fontWeight: 'bold',
-    fontFamily: 'Jua-Regular', // 글꼴을 Jua-Regular로 설정
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: 'Jua-Regular',
   },
 });
+
 
 export default PostList;

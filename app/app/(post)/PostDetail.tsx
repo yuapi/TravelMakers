@@ -134,30 +134,35 @@ const PostDetail = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+    padding: 16,
+    paddingTop: 40, // 상단 패딩 줄임
+    backgroundColor: '#F9FFFF',
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginBottom: 10,
+    marginBottom: 15, // 아래 여백 조정
   },
   icon: {
     marginLeft: 15,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26, // 제목 크기를 약간 줄임
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 15, // 아래 여백 줄임
+    color: '#007aff',
+    fontFamily: 'Jua-Regular',
   },
   author: {
     fontSize: 16,
     color: '#555',
-    marginBottom: 5,
+    marginBottom: 10, // 아래 여백 줄임
+    fontFamily: 'Jua-Regular',
   },
   content: {
     fontSize: 18,
     marginBottom: 20,
+    fontFamily: 'Jua-Regular',
   },
   commentSection: {
     marginTop: 20,
@@ -166,30 +171,44 @@ const styles = StyleSheet.create({
     paddingTop: 15,
   },
   commentSectionTitle: {
-    fontSize: 20,
+    fontSize: 22, // 댓글 섹션 제목 크기를 약간 키움
     fontWeight: 'bold',
     marginBottom: 10,
+    fontFamily: 'Jua-Regular',
+    color: '#007aff',
   },
   inputContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center', // 세로 중앙 정렬
+    marginBottom: 15, // 아래 여백 줄임
   },
   commentInput: {
-    flex: 8,
+    flex: 1, // 입력 필드가 남은 공간을 차지하도록 수정
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 8,
+    padding: 10, // 패딩 조정
     marginRight: 10,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 1,
   },
   comment: {
     fontSize: 16,
     marginVertical: 5,
-    padding: 10,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 5,
+    padding: 10, // 패딩 조정
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 1,
   },
 });
+
 
 export default PostDetail;

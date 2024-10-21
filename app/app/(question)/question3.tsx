@@ -12,17 +12,18 @@ export default function QoneScreen() {
   };
 
   const items = [
-    { label: "남자 혼자", value: 0 },
-    { label: "여자 혼자", value: 1 },
-    { label: "친구들과", value: 2 },
-    { label: "부모님과", value: 3 },
-    { label: "연인과", value: 4 },
-    { label: "미정", value: 5 },
+    { label: "자연여행", value: 0 },
+    { label: "문화/역사 탐방 여행", value: 1 },
+    { label: "미식여행", value: 2 },
+    { label: "힐링 휴양 여행", value: 3 },
+    { label: "액티비티 여행", value: 4 },
+    { label: "사진 촬영 여행", value: 5 },
+    { label: "체험 여행", value: 6 },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <Title style={styles.title}>누구와 가실 예정인가요?</Title>
+      <Title style={styles.title}>원하는 여행 테마</Title>
       <FlatList
         data={items}
         keyExtractor={(item) => item.value.toString()}
@@ -40,7 +41,7 @@ export default function QoneScreen() {
       />
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.nextButton}>
-          <Link href='/question2'>
+          <Link href='/recommendation'>
             <Text style={styles.bottomText}>확인</Text>
           </Link>
         </TouchableOpacity>

@@ -106,42 +106,52 @@ const PostForm = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#F7FFFF',
+    padding: 16,
+    paddingTop: 40, // 상단 패딩을 줄여서 여백을 조정
+    backgroundColor: '#F9FFFF',
   },
   title: {
-    fontSize: 30,
+    fontSize: 28, // 제목 크기를 줄임
     fontFamily: 'Jua-Regular',
-    color: '#007AFF',
+    color: '#007aff',
     marginBottom: 20,
     textAlign: 'center',
   },
   label: {
-    fontSize: 16,
+    fontSize: 18, // 레이블 크기를 조금 키움
     marginBottom: 5,
     fontFamily: 'Jua-Regular',
+    color: '#555',
   },
   input: {
-    height: 100,
+    height: 80, // 입력 필드 높이를 줄임
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 15,
-    fontFamily: 'Jua-Regular',
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 1,
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    marginTop: 20,
+    padding: 14, // 버튼 패딩을 조금 늘림
+    backgroundColor: '#007aff',
     borderRadius: 8,
-    paddingVertical: 15,
-    justifyContent: 'center',
     alignItems: 'center',
+    elevation: 1,
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 16, // 버튼 텍스트 크기를 줄임
+    fontWeight: '700',
     fontFamily: 'Jua-Regular',
   },
 });
+
 
 export default PostForm;

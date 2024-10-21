@@ -8,19 +8,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signOut } from '@aws-amplify/auth';
 
 interface MyData {
-  nickname: string
-  email: string
-  gender: string
-  birthday: string
-  locale: string
+  nickname: string;
+  email: string;
+  gender: string;
+  birthday: string;
+  locale: string;
 }
 
 export default function MyPage() {
-	const [user, setUser] = useState<MyData | null>(null);
+  const [user, setUser] = useState<MyData | null>(null);
 
   useEffect(() => {
-    getMyData()
-	}, []);
+    getMyData();
+  }, []);
 
   const getMyData = async (): Promise<void> => {
     const resUser: string = await AsyncStorage.getItem('user') ?? "";
@@ -31,11 +31,11 @@ export default function MyPage() {
       email: userdata.email,
       gender: userdata.gender,
       birthday: userdata.birthday,
-      locale: userdata.locale
-    }
-    console.log(userdata)
+      locale: userdata.locale,
+    };
+    console.log(userdata);
     setUser(mydata);
-  }
+  };
 
   const router = useRouter();
   const [fontsLoaded] = useFonts({
@@ -56,7 +56,7 @@ export default function MyPage() {
           Alert.alert('알림', '계정이 정상적으로 삭제되었습니다.', [
             { text: '확인', onPress: () => router.replace('/(main)') },
           ]);
-        }
+        },
       },
     ]);
   };
@@ -68,7 +68,7 @@ export default function MyPage() {
         text: '로그아웃',
         onPress: async () => {
           await signOut();
-        }
+        },
       },
     ]);
   };
@@ -88,7 +88,7 @@ export default function MyPage() {
           <Text style={styles.nickname}>이메일: {user?.email ?? "불러오는 중.."}</Text>
         </View>
         <View style={styles.nicknameContainer}>
-          <Text style={styles.nickname}>성별: {user?.gender == "Male" ? "남자" : user?.gender == "Female" ? "여자" : "비공개"}</Text>
+          <Text style={styles.nickname}>성별: {user?.gender === "Male" ? "남자" : user?.gender === "Female" ? "여자" : "비공개"}</Text>
         </View>
         <View style={styles.nicknameContainer}>
           <Text style={styles.nickname}>생년월일: {user?.birthday ?? ""}</Text>
@@ -96,24 +96,24 @@ export default function MyPage() {
       </View>
 
       <View style={styles.sectionContainer}>
-        <Link href="/profile">
+        <Link href="/profile" asChild>
           <TouchableOpacity style={styles.section}>
             <MaterialCommunityIcons name="account-edit" size={20} color="#007aff" />
-            <Text style={styles.sectionText}>개인정보 수정                                    </Text>
+            <Text style={styles.sectionText}>개인정보 수정</Text>
           </TouchableOpacity>
         </Link>
         <View style={styles.separator} />
-        <Link href="/notice">
+        <Link href="/notice" asChild>
           <TouchableOpacity style={styles.section}>
             <MaterialCommunityIcons name="bell" size={20} color="#007aff" />
-            <Text style={styles.sectionText}>공지사항                                         </Text>
+            <Text style={styles.sectionText}>공지사항</Text>
           </TouchableOpacity>
         </Link>
         <View style={styles.separator} />
-        <Link href="/terms">
+        <Link href="/terms" asChild>
           <TouchableOpacity style={styles.section}>
             <MaterialCommunityIcons name="book-open-variant" size={20} color="#007aff" />
-            <Text style={styles.sectionText}>약관 및 정책                                      </Text>
+            <Text style={styles.sectionText}>약관 및 정책</Text>
           </TouchableOpacity>
         </Link>
       </View>
@@ -137,43 +137,43 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#F9FFFF', 
+    backgroundColor: '#F9FFFF',
   },
   header: {
     marginBottom: 20,
     alignItems: 'center',
-    marginTop: 40, 
+    marginTop: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: '#007aff',
     fontFamily: 'Jua-Regular',
   },
   nicknameContainer: {
     backgroundColor: '#ffffff',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    marginTop: 10,
+    marginTop: 8,
   },
   nickname: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '500',
     color: '#333',
     fontFamily: 'Jua-Regular',
   },
   sectionContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   section: {
-    paddingVertical: 18,
-    paddingHorizontal: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     backgroundColor: '#ffffff',
     borderRadius: 8,
     shadowColor: '#000',
@@ -182,12 +182,12 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'flex-start',
     width: '100%',
   },
   sectionText: {
-    fontSize: 18, 
+    fontSize: 16,
     color: '#000',
     marginLeft: 10,
     fontFamily: 'Jua-Regular',
@@ -195,10 +195,10 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: '#e0e0e0',
-    marginVertical: 12,
+    marginVertical: 8,
   },
   infoContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   infoText: {
     fontSize: 12,
@@ -207,11 +207,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Jua-Regular',
   },
   deleteButton: {
-    padding: 12,
+    padding: 10,
     backgroundColor: '#ff4d4d',
     borderRadius: 5,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   deleteButtonText: {
     color: '#ffffff',
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Jua-Regular',
   },
   logoutButton: {
-    padding: 12,
+    padding: 10,
     backgroundColor: '#007aff',
     borderRadius: 5,
     alignItems: 'center',
