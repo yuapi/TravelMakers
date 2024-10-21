@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
-import { Title, Caption } from 'react-native-paper';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, SafeAreaView } from 'react-native';
+import { Caption } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { signOut } from '@aws-amplify/auth';
+import { fetchAuthSession, signOut, deleteUser } from '@aws-amplify/auth';
+import axios from 'axios';
+import { api } from '@/config.json';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface MyData {
   nickname: string
@@ -23,18 +25,17 @@ export default function MyPage() {
 	}, []);
 
   const getMyData = async (): Promise<void> => {
-    const resUser: string = await AsyncStorage.getItem('user') ?? "";
-    const userdata = JSON.parse(resUser);
-
-    const mydata: MyData = {
-      nickname: userdata.nickname,
-      email: userdata.email,
-      gender: userdata.gender,
-      birthday: userdata.birthday,
-      locale: userdata.locale
+    try {
+      const { tokens } = await fetchAuthSession();
+      const response = await axios.get('/v1/user', {
+        baseURL: api.baseURL,
+        headers: { Authorization: tokens?.idToken?.toString() }
+      })
+      const data = JSON.parse(response.data.body);
+      setUser(data);
+    } catch (error) {
+      console.error('Error from fetching MyData:', error);
     }
-    console.log(userdata)
-    setUser(mydata);
   }
 
   const router = useRouter();
@@ -51,11 +52,23 @@ export default function MyPage() {
       { text: '취소', style: 'cancel' },
       { 
         text: '삭제', 
-        onPress: () => {
-          console.log('계정 삭제 처리');
-          Alert.alert('알림', '계정이 정상적으로 삭제되었습니다.', [
-            { text: '확인', onPress: () => router.replace('/(main)') },
-          ]);
+        onPress: async () => {
+          try {
+            const { tokens } = await fetchAuthSession();
+            const response = await axios.delete('/v1/user', {
+              baseURL: api.baseURL,
+              headers: { Authorization: tokens?.idToken?.toString() }
+            })
+            console.log(response.data)
+            if (response.data.statusCode != 200) throw (response.data.statusCode);
+
+            await deleteUser();
+
+            Alert.alert('알림', '계정이 정상적으로 삭제되었습니다.');
+            router.replace('/');
+          } catch (error) {
+            console.error('Error from deleting User:', error);
+          }
         }
       },
     ]);
@@ -68,6 +81,7 @@ export default function MyPage() {
         text: '로그아웃',
         onPress: async () => {
           await signOut();
+          router.replace('/')
         }
       },
     ]);
@@ -77,10 +91,12 @@ export default function MyPage() {
     return null;
   }
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.scrollViewContent, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Title style={styles.title}>마이 페이지</Title>
+        <Text style={styles.title}>마이 페이지</Text>
         <View style={styles.nicknameContainer}>
           <Text style={styles.nickname}>닉네임: {user?.nickname ?? "불러오는 중.."}</Text>
         </View>
@@ -91,26 +107,26 @@ export default function MyPage() {
           <Text style={styles.nickname}>성별: {user?.gender == "Male" ? "남자" : user?.gender == "Female" ? "여자" : "비공개"}</Text>
         </View>
         <View style={styles.nicknameContainer}>
-          <Text style={styles.nickname}>생년월일: {user?.birthday ?? ""}</Text>
+          <Text style={styles.nickname}>생년월일: {user?.birthday ?? "비공개"}</Text>
         </View>
       </View>
 
       <View style={styles.sectionContainer}>
-        <Link href="/profile">
+        <Link href="/profile" asChild>
           <TouchableOpacity style={styles.section}>
             <MaterialCommunityIcons name="account-edit" size={20} color="#007aff" />
             <Text style={styles.sectionText}>개인정보 수정                                    </Text>
           </TouchableOpacity>
         </Link>
         <View style={styles.separator} />
-        <Link href="/notice">
+        <Link href="/notice" asChild>
           <TouchableOpacity style={styles.section}>
             <MaterialCommunityIcons name="bell" size={20} color="#007aff" />
             <Text style={styles.sectionText}>공지사항                                         </Text>
           </TouchableOpacity>
         </Link>
         <View style={styles.separator} />
-        <Link href="/terms">
+        <Link href="/terms" asChild>
           <TouchableOpacity style={styles.section}>
             <MaterialCommunityIcons name="book-open-variant" size={20} color="#007aff" />
             <Text style={styles.sectionText}>약관 및 정책                                      </Text>
@@ -134,21 +150,29 @@ export default function MyPage() {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F9FFFF',
+  },
   container: {
     flex: 1,
+    backgroundColor: '#F9FFFF',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     padding: 16,
-    backgroundColor: '#F9FFFF', 
   },
   header: {
     marginBottom: 20,
     alignItems: 'center',
-    marginTop: 40, 
+    paddingTop: 20,
   },
   title: {
     fontSize: 32,
     fontWeight: '700',
     color: '#007aff',
     fontFamily: 'Jua-Regular',
+    marginBottom: 10,
   },
   nicknameContainer: {
     backgroundColor: '#ffffff',

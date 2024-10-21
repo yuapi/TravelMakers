@@ -1,45 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Alert, TouchableOpacity, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
-import { router } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import axios from 'axios';
+import { api } from '@/config.json';
+import { fetchAuthSession, getCurrentUser } from '@aws-amplify/auth';
 
-interface Post {
-  id: string;
+interface PostModify {
+  id: number;
   title: string;
   content: string;
-  author: string;
 }
 
-interface PostFormProps {
-  // route는 여기에 명시적으로 정의해 줍니다.
-  route: {
-    params: {
-      post?: Post; // 수정 또는 새로운 게시글을 위한 post
-    };
-  };
-  navigation: {
-    navigate: (screen: string, params?: object) => void;
-  };
-}
-
-// React.FC 대신 일반 함수형 컴포넌트로 변경
 const PostForm = () => {
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
-  const [post, setPost] = useState<Post | null>(null);
   const [fontsLoaded] = useFonts({
     'Jua-Regular': require('../../assets/fonts/Jua-Regular.ttf'),
   });
 
-  // useEffect(() => {
-  //   if (route.params?.post) {
-  //     const { post } = route.params;
-  //     setPost(post);
-  //     setTitle(post.title);
-  //     setContent(post.content);
-  //   }
-  // }, [route.params?.post]);
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
+  useEffect(() => {
+    setTitle('');
+    setContent('');
+
+    if (params?.pid) {
+      getPostDetail(Number(params.pid))
+    }
+  }, []);
+
+  async function getPostDetail(pid: number) {
+    try {
+      const currentUser = await getCurrentUser();
+      const { tokens } = await fetchAuthSession();
+      const response = await axios.get(`/v1/post/${pid}`, {
+        baseURL: api.baseURL,
+        headers: { Authorization: tokens?.idToken?.toString() }
+      });
+      const data = JSON.parse(response.data.body);
+  
+      if (data.userid != currentUser.userId) {
+        Alert.alert("잘못된 접근입니다.")
+        router.back();
+        return;
+      }
+
+      setTitle(data.title);
+      setContent(data.content);
+    } catch (error) {
+      console.error('게시글 불러오기 실패:', error);
+    }
+  }
 
   const handleSave = async () => {
     if (!title || !content) {
@@ -47,29 +61,29 @@ const PostForm = () => {
       return;
     }
 
-    const newPost: Post = {
-      id: post ? post.id : Date.now().toString(),
-      title,
-      content,
-      author: "익명",
-    };
-
     try {
-      const storedPosts = await AsyncStorage.getItem('posts');
-      const postsArray: Post[] = storedPosts ? JSON.parse(storedPosts) : [];
+      const { tokens } = await fetchAuthSession();
+      let response;
 
-      if (post) {
-        // 기존 게시글 수정
-        const updatedPosts = postsArray.map(item => (item.id === post.id ? newPost : item));
-        await AsyncStorage.setItem('posts', JSON.stringify(updatedPosts));
+      if (params?.pid) {
+        response = await axios.put(`/v1/post/${params.pid}`, {
+          title: title,
+          content: content,
+        }, {
+          baseURL: api.baseURL,
+          headers: { Authorization: tokens?.idToken?.toString() }
+        });
       } else {
-        // 새로운 게시글 추가
-        postsArray.push(newPost);
-        await AsyncStorage.setItem('posts', JSON.stringify(postsArray));
+        response = await axios.post('/v1/post', {
+          title: title,
+          content: content,
+        }, {
+          baseURL: api.baseURL,
+          headers: { Authorization: tokens?.idToken?.toString() }
+        });
       }
-
-      // PostList로 이동하면서 상태 업데이트
-      router.push({ pathname: "/postlist"});
+      console.log(response.data);
+      router.back();
     } catch (error) {
       console.error("게시글 저장 실패:", error);
     }
@@ -80,30 +94,36 @@ const PostForm = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>게시글 작성</Text>
-      <Text style={styles.label}>제목</Text>
-      <TextInput
-        style={styles.input}
-        value={title}
-        onChangeText={setTitle}
-      />
-      <Text style={styles.label}>내용</Text>
-      <TextInput
-        style={styles.input}
-        value={content}
-        onChangeText={setContent}
-        multiline
-        numberOfLines={4}
-      />
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>{post ? "수정 완료" : "게시글 작성"}</Text>
-      </TouchableOpacity>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Text style={styles.title}>게시글 작성</Text>
+        <Text style={styles.label}>제목</Text>
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+        />
+        <Text style={styles.label}>내용</Text>
+        <TextInput
+          style={styles.input}
+          value={content}
+          onChangeText={setContent}
+          multiline
+          numberOfLines={4}
+        />
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>{params?.pid ? "수정 완료" : "게시글 작성"}</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F9FFFF',
+  },
   container: {
     flex: 1,
     padding: 20,

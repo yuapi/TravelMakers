@@ -1,94 +1,108 @@
-import { getCurrentUser, fetchAuthSession } from '@aws-amplify/auth';
-import { Link } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchAuthSession } from '@aws-amplify/auth';
 import axios from 'axios';
+import { Link, useFocusEffect, usePathname } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet, Text, Linking, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import Swiper from 'react-native-swiper';
 import { api } from '@/config.json';
 
-interface UserData {
-  uid: string
-  username: string
-  nickname: string
-  email: string
-  gender: string
-  birthday: string
-  locale: string
-  regdate: string
-  tokens: {
-    accessToken: string
-    idToken: string
-  }
+interface Slide {
+  src: any;
+  caption: string;
 }
 
-async function getUser(): Promise<void> {
-  try {
-    const { userId, username } = await getCurrentUser();
-    const { tokens } = await fetchAuthSession({ forceRefresh: true });
-    const accessToken = tokens?.accessToken.toString() ?? "";
-    const idToken = tokens?.idToken?.toString() ?? "";
-
-    const response = await axios.get(`/v1/user/${username.split("_")[1]}`, {
-      baseURL: api.baseURL,
-      headers: { Authorization: idToken },
-    })
-    const data = JSON.parse(response.data.body);
-
-    const resUser: UserData = {
-      uid: userId,
-      username: username,
-      nickname: data.nickname,
-      email: data.email,
-      gender: data.gender ?? '',
-      birthday: data.birthday ?? '',
-      locale: data.locale ?? '',
-      regdate: data.regdate,
-      tokens: {
-        accessToken: accessToken,
-        idToken: idToken
-      }
-    }
-    await AsyncStorage.setItem("user", JSON.stringify(resUser));
-
-  } catch (error) {
-    console.error(error);
-    console.log("Not signed in");
-  }
+interface Post {
+  id: number;
+  title: string;
 }
 
-exports.getUser = getUser
+export default function MainScreen() {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [slides, setSlides] = useState<Slide[]>([
+    { src: require('@/assets/images/banner1.png'), caption: 'Example' },
+    { src: require('@/assets/images/banner2.png'), caption: 'Example' },
+    { src: require('@/assets/images/banner3.png'), caption: 'Example' },
+    { src: require('@/assets/images/banner4.png'), caption: 'Example' },
+  ]);
 
-const MainScreen = () => {
   useEffect(() => {
-		getUser();
-	}, []);
+      loadPosts();
+  }, [])
+
+  
+  const loadPosts = async () => {
+    try {
+      const { tokens } = await fetchAuthSession();
+      const response = await axios.get('/v1/post', {
+        baseURL: api.baseURL,
+        headers: { Authorization: tokens?.idToken?.toString() },
+      })
+      const data = JSON.parse(response.data.body);
+      console.log(data)
+      setPosts(data.postList)
+    } catch (error) {
+      console.error("게시글 로드 실패:", error);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <Link href='/' style={styles.button}>
-        <Text style={styles.buttonText}>로그인</Text>
-      </Link>
-      <Link href='/mypage' style={styles.button}>
-        <Text style={styles.buttonText}>마이페이지</Text>
-      </Link>
-      <Link href='/question1' style={styles.button}>
-        <Text style={styles.buttonText}>Question1 테스트</Text>
-      </Link>
-      <Link href='/postlist' style={styles.button}>
-        <Text style={styles.buttonText}>게시판</Text>
-      </Link>
-      <Link href='/chatbot' style={styles.button}>
-        <Text style={styles.buttonText}>챗봇</Text>
-      </Link>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Travelmakers</Text>
+        </View>
+        <View style={styles.swiperContainer}>
+          <Swiper style={styles.swiper} showsPagination={true} autoplay={true}>
+            { slides.map(slide => 
+              <View style={styles.slide}>
+                <Image source={slide.src} style={styles.image} />
+              </View>
+            )}
+          </Swiper>
+        </View>
+        <Link push href={'/question1'} asChild>
+          <TouchableOpacity style={styles.recommendButton}>
+            <Text style={styles.recommendButtonText}>여행지 추천받기</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <View style={styles.boardPreview}>
+          <Text style={styles.boardTitle}>최근 게시글</Text>
+            {posts.length > 0 ? (
+              posts.slice(0, 5).map(post => (
+                <Link push href={{ pathname: '/postdetail', params: { pid: post.id} }} asChild>
+                  <TouchableOpacity>
+                    <View style={styles.boardItem}>
+                      <Text style={styles.boardItemTitle}>{post.title}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </Link>
+              ))
+            ) : (
+            // 게시글이 없는 경우
+            [...Array(5)].map((_, index) => (
+              <View key={index} style={styles.boardItem}>
+                <Text style={styles.boardItemTitle}></Text>
+              </View>
+            ))
+          )}
+        </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFF',
+    // justifyContent: 'center',
+    // alignItems: 'center',
   },
   button: {
     padding: 10,
@@ -100,6 +114,112 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
   },
-});
+  header: {
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
+    marginTop: 30,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginBottom: 10,
+  },
+  swiperContainer: {
+    height: 350,
+  },
+  menuIcon: {
+    fontSize: 24,
+  },
+  title: {
+    fontSize: 30,
+    fontFamily: 'Montserrat-VariableFont_wght',
+    fontWeight: 'bold',
+    color: '#007AFF',
+    marginBottom: 10,
+  },
+  swiper: {
+    height: 350,
+  },
+  slide: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hotTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    fontFamily: 'Jua-Regular',
+    textAlign: 'center',
+  },
+  hot: {
+    color: 'red',
+    fontFamily: 'Jua-Regular',
+  },
+  image: {
+    width: '100%',
+    height: 300,
+    borderRadius: 10,
+    resizeMode: 'cover',
+  },
+  boardSlide: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  boardTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    fontFamily: 'Jua-Regular',
+    marginBottom: 10,
+  },
+  board: {
+    width: '90%',
+    height: 200,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recommendButton: {
+    padding: 15,
+    backgroundColor: '#007AFF', // 버튼 색상
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  recommendButtonText: {
+    color: '#fff',
+    fontSize: 18, // 버튼 텍스트 크기 조정
+    fontWeight: 'bold',
+    fontFamily: 'Jua-Regular', // 글꼴을 Jua-Regular로 설정
+    // fontSize: 18,
+    // fontWeight: 'bold',
+  },
+  boardPreview: {
+    marginHorizontal: 20,
+    marginTop: 30,
+  },
+  boardItem: {
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  boardItemTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  boardItemContent: {
+    fontSize: 14,
+    color: '#666',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    backgroundColor: '#f8f8f8',
+  },
+  navIcon: {
+    alignItems: 'center',
+  },
 
-export default MainScreen;
+});

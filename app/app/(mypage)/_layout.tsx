@@ -8,7 +8,6 @@ export default function MyPageLayout() {
 
   return (
 	<Stack>
-		<Stack.Screen name="mypage" options={{ headerShown: false }} />
 		<Stack.Screen name="notice" options={{ headerShown: false }} />
 		<Stack.Screen name="profile" options={{ headerShown: false }} />
 		<Stack.Screen name="terms" options={{ headerShown: false }} />

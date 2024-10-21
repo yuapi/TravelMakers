@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, FlatList, Dimensions, SafeAreaView } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Link, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { Title } from 'react-native-paper';
 
-export default function QoneScreen() {
+export default function QfourScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const { companion, duration, budget } = useLocalSearchParams();
 
   const handleItemPress = (index: number) => {
     setSelectedIndex(index);
@@ -13,22 +15,28 @@ export default function QoneScreen() {
   const router = useRouter();
   const handleNext = () => {
     if (selectedIndex != null) {
-      router.replace({ pathname: '/question2', params: { companion: items[selectedIndex].label }})
+      router.replace({ pathname: '/question5', params: { 
+        companion: companion,
+        duration: duration,
+        budget: budget,
+        theme: items[selectedIndex].label,
+      }})
     }
   }
 
   const items = [
-    { label: "남자 혼자", value: 0 },
-    { label: "여자 혼자", value: 1 },
-    { label: "친구들과", value: 2 },
-    { label: "부모님과", value: 3 },
-    { label: "연인과", value: 4 },
-    { label: "미정", value: 5 },
+    { label: "자연여행", value: 0 },
+    { label: "문화/역사 탐방 여행", value: 1 },
+    { label: "미식여행", value: 2 },
+    { label: "힐링 휴양 여행", value: 3 },
+    { label: "액티비티 여행", value: 4 },
+    { label: "사진 촬영 여행", value: 5 },
+    { label: "체험 여행", value: 6 },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>누구와 가실 예정인가요?</Text>
+      <Text style={styles.title}>원하는 여행 테마는 무엇인가요?</Text>
       <FlatList
         data={items}
         keyExtractor={(item) => item.value.toString()}
@@ -45,7 +53,7 @@ export default function QoneScreen() {
         )}
       />
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+      <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.bottomText}>다음</Text>
           {/* <Link href={{ pathname: '/question2', params: { companion: items[selectedIndex]}}}>
             <Text style={styles.bottomText}>다음</Text>

@@ -1,34 +1,38 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, FlatList, Dimensions, SafeAreaView } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Link, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { Title } from 'react-native-paper';
 
-export default function QoneScreen() {
+export default function QfiveScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const { companion, duration, budget, theme } = useLocalSearchParams();
 
   const handleItemPress = (index: number) => {
     setSelectedIndex(index);
   };
 
   const router = useRouter();
-  const handleNext = () => {
+  const handleResult = () => {
     if (selectedIndex != null) {
-      router.replace({ pathname: '/question2', params: { companion: items[selectedIndex].label }})
+      router.replace({ pathname: '/recommendation', params: { 
+        companion: companion,
+        duration: duration,
+        budget: budget,
+        theme: theme,
+        complexity: items[selectedIndex].label,
+      }})
     }
   }
 
   const items = [
-    { label: "남자 혼자", value: 0 },
-    { label: "여자 혼자", value: 1 },
-    { label: "친구들과", value: 2 },
-    { label: "부모님과", value: 3 },
-    { label: "연인과", value: 4 },
-    { label: "미정", value: 5 },
+    { label: "복잡한 일정", value: 0 },
+    { label: "여유로운 일정", value: 1 },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>누구와 가실 예정인가요?</Text>
+      <Text style={styles.title}>어떤 여행 일정을 선호하나요?</Text>
       <FlatList
         data={items}
         keyExtractor={(item) => item.value.toString()}
@@ -45,7 +49,7 @@ export default function QoneScreen() {
         )}
       />
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+        <TouchableOpacity style={styles.nextButton} onPress={handleResult}>
           <Text style={styles.bottomText}>다음</Text>
           {/* <Link href={{ pathname: '/question2', params: { companion: items[selectedIndex]}}}>
             <Text style={styles.bottomText}>다음</Text>
