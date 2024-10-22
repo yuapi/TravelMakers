@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, TouchableOpacity, FlatList, Dimensions, SafeAreaView } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Link } from 'expo-router';
+import { Title } from 'react-native-paper';
 
 export default function QoneScreen() {
   const [selectedIndex, setSelectedIndex] = useState<Number | null>(null);
@@ -9,8 +10,8 @@ export default function QoneScreen() {
   const handleItemPress = (index: Number) => {
     setSelectedIndex(index);
   };
-  
-  const radioItems = [
+
+  const items = [
     { label: "남자 혼자", value: 0 },
     { label: "여자 혼자", value: 1 },
     { label: "친구들과", value: 2 },
@@ -20,97 +21,84 @@ export default function QoneScreen() {
   ];
 
   return (
-    <View style={styles.container}>      
-      <Text style={styles.HomeText}>누구와 가실 예정인가요?</Text>
+    <SafeAreaView style={styles.container}>
+      <Title style={styles.title}>누구와 가실 예정인가요?</Title>
       <FlatList
-        data={radioItems}
+        data={items}
         keyExtractor={(item) => item.value.toString()}
         renderItem={({ item, index }) => (
           <TouchableOpacity
             style={[
-              styles.radioItem,
-              selectedIndex === index ? styles.selectedRadioItem : null,
+              styles.item,
+              selectedIndex === index ? styles.selectedItem : null,
             ]}
             onPress={() => handleItemPress(index)}
           >
-            <View style={styles.radioCircle}>
-              {selectedIndex === index && <View style={styles.selectedCircle} />}
-            </View>
-            <Text style={styles.radioLabel}>{item.label}</Text>
+            <Text style={styles.itemLabel}>{item.label}</Text>
           </TouchableOpacity>
         )}
       />
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.NextBottom}>
+        <TouchableOpacity style={styles.nextButton}>
           <Link href='/question2'>
-            <Text style={styles.BottomText}>확인</Text>
+            <Text style={styles.bottomText}>확인</Text>
           </Link>
         </TouchableOpacity>
       </View>
-    </View>
-  )
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: "#fff",
-    },
-    HomeText: {
-      fontSize: 30,
-      textAlign: "center",
-      marginBottom: 50,
-      marginTop:50
-    },
-    radioItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-    },
-    selectedRadioItem: {
-      backgroundColor: "#f2f2f2",
-    },
-    // [radioCircle, selectedCircle]에 대한 CSS 누락
-    radioCircle: {
-
-    },
-    selectedCircle: {
-
-    },
-    radioLabel: {
-      margin: 15,
-      fontSize: 16,
-      textAlign:"center",
-      flex:1,
-    },
-    NextBottom: {
-      backgroundColor: "skyblue",
-      padding: 10,
-      width: "90%",
-      alignSelf: "center",
-      borderRadius: 10,
-    },
-    BottomText: {
-      fontSize: 15,
-      color: "white",
-      textAlign: "center",
-    },
-    bottomContainer: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "#fff",
-        paddingVertical: 16,
-        paddingHorizontal: 24,
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: -2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-      },
-  });
+  container: {
+    flex: 1,
+    padding: 16,
+    paddingTop: 70,
+    backgroundColor: '#F9FFFF',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#007aff',
+    textAlign: 'center',
+    marginBottom: 30,
+    fontFamily: 'Jua-Regular',
+  },
+  item: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  selectedItem: {
+    backgroundColor: "#b2ebf2",
+  },
+  itemLabel: {
+    fontSize: 20,
+    color: '#000',
+    textAlign: 'center',
+    fontFamily: 'Jua-Regular',
+  },
+  nextButton: {
+    backgroundColor: "#007aff",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  bottomText: {
+    fontSize: 18,
+    color: "white",
+    textAlign: "center",
+    fontFamily: 'Jua-Regular',
+  },
+  bottomContainer: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+  },
+});
