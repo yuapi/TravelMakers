@@ -1,63 +1,87 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, TextInput, Button, FlatList } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Alert, TextInput, Button, FlatList, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import axios from 'axios';
+import { api } from '@/config.json';
+import { fetchAuthSession, getCurrentUser } from '@aws-amplify/auth';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-interface Post {
-  id: string;
-  title: string;
+interface PostDetail {
+  id: number;
+  userid: string;
   author: string;
+  title: string;
   content: string;
+  created: string;
+  modified: string | null;
 }
 
-interface PostDetailProps {
-  route: {
-    params: {
-      post: Post;
-    };
-  };
-  navigation: any;
+interface Comment {
+  id: number;
+  author: string;
+  content: string;
+  created: string;
 }
 
 const PostDetail = () => {
+  const [post, setPost] = useState<PostDetail | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentText, setCommentText] = useState<string>('');
+  const [userid, setUserid] = useState<string>('');
+
   const router = useRouter();
   const params = useLocalSearchParams();
-  const item: string = params.item; // 타입 가능성 오류로 빨간 밑줄 있을 수도 있는데, 일단 무시해도 됩니다.
-  const post: Post = JSON.parse(item);
-  console.log(post)
-  const [comments, setComments] = useState<{ id: string; text: string }[]>([]);
-  const [commentText, setCommentText] = useState<string>('');
 
-  // const post = {
-  //   id: '1',
-  //   title: 'test01',
-  //   author: 'tester01',
-  //   content: 'testing'
-  // }
+  useFocusEffect(
+    useCallback(() => {
+      loadUser();
+      loadDetail();
+      loadComments();
+    }, [])
+  );
+  
+  async function loadUser() {
+    const currentUser = await getCurrentUser();
+    setUserid(currentUser.userId);
+  }
 
-  const loadComments = async () => {
+  async function loadDetail() {
     try {
-      const storedComments = await AsyncStorage.getItem(`comments_${post.id}`);
-      if (storedComments) {
-        setComments(JSON.parse(storedComments));
-      }
-    } catch (error) {
-      console.error("댓글 로드 실패:", error);
-    }
-  };
+      const { tokens } = await fetchAuthSession();
+      const response = await axios.get(`/v1/post/${params.pid}`, {
+        baseURL: api.baseURL,
+        headers: { Authorization: tokens?.idToken?.toString() }
+      });
+      console.log(response.data)
+      const data = JSON.parse(response.data.body);
 
-  const saveComments = async (commentsToSave: { id: string; text: string }[]) => {
+      setPost(data);
+    } catch (error) {
+      console.error('게시글 불러오기 실패:', error);
+    }
+  }
+
+  async function loadComments() {
     try {
-      await AsyncStorage.setItem(`comments_${post.id}`, JSON.stringify(commentsToSave));
-    } catch (error) {
-      console.error("댓글 저장 실패:", error);
-    }
-  };
+      const { tokens } = await fetchAuthSession();
+      const response = await axios.get(`/v1/comment/${params.pid}`, {
+        baseURL: api.baseURL,
+        headers: { Authorization: tokens?.idToken?.toString() }
+      });
+      console.log(response.data)
+      const data = JSON.parse(response.data.body);
 
-  // const handleEdit = () => {
-  //   navigation.navigate('PostForm', { post });
-  // };
+      setComments(data.commentList);
+    } catch (error) {
+      console.error('댓글 불러오기 실패:', error);
+    }
+  }
+
+  const handleEdit = () => {
+    router.push({ pathname: "/postform", params: { pid: post?.id }});
+  };
 
   const handleDelete = async () => {
     Alert.alert(
@@ -67,13 +91,14 @@ const PostDetail = () => {
         { text: "취소", style: "cancel" },
         { text: "삭제", onPress: async () => {
           try {
-            const posts = await AsyncStorage.getItem('posts');
-            const postsArray = posts ? JSON.parse(posts) : [];
+            const { tokens } = await fetchAuthSession();
+            const response = await axios.delete(`/v1/post/${params.pid}`, {
+              baseURL: api.baseURL,
+              headers: { Authorization: tokens?.idToken?.toString() }
+            });
+            console.log(response.data)
 
-            const updatedPosts = postsArray.filter((item: { id: string; }) => item.id !== post.id);
-            await AsyncStorage.setItem('posts', JSON.stringify(updatedPosts));
-
-            router.push({ pathname: "/postlist"});
+            router.back();
           } catch (error) {
             console.error("게시글 삭제 실패:", error);
           }
@@ -82,33 +107,45 @@ const PostDetail = () => {
     );
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (commentText.trim()) {
-      const newComment = { id: Math.random().toString(), text: commentText };
-      const updatedComments = [...comments, newComment];
-      setComments(updatedComments);
-      saveComments(updatedComments);
-      setCommentText('');
+      try {
+        const { tokens } = await fetchAuthSession();
+        const response = await axios.post(`/v1/comment`, {
+          postid: params.pid,
+          content: commentText
+        }, {
+          baseURL: api.baseURL,
+          headers: { Authorization: tokens?.idToken?.toString() }
+        });
+        console.log(response.data)
+
+        setCommentText('');
+        loadComments();
+      } catch (error) {
+        console.error("게시글 삭제 실패:", error);
+      }
     } else {
       Alert.alert("댓글을 입력해주세요.");
     }
   };
 
-  useEffect(() => {
-    loadComments(); // 컴포넌트가 마운트될 때 댓글 로드
-  }, []);
-
   return (
     <View style={styles.container}>
-      <Text> </Text>
-      <View style={styles.topBar}>
-        {/* <Ionicons name="pencil" size={24} color="black" onPress={handleEdit} style={styles.icon} /> */}
-        <Ionicons name="trash" size={24} color="red" onPress={handleDelete} style={styles.icon} />
-      </View>
+      { post?.userid === userid ? 
+        <View style={styles.topBar}>
+          <Ionicons name="pencil" size={24} color="black" onPress={handleEdit} style={styles.icon} />
+          <Ionicons name="trash" size={24} color="red" onPress={handleDelete} style={styles.icon} />
+        </View>
+      :
+        <View style={styles.topBar}>
+        </View>
+      }
 
-      <Text style={styles.title}>{post.title}</Text>
-      <Text style={styles.author}>작성자: {post.author}</Text>
-      <Text style={styles.content}>{post.content}</Text>
+      <Text style={styles.title}>{post?.title}</Text>
+      <Text style={styles.author}>{post?.author}</Text>
+      <Text style={styles.author}>{post?.modified ? post.modified + ' (수정됨)' : post?.created}</Text>
+      <Text style={styles.content}>{post?.content}</Text>
 
       <View style={styles.commentSection}>
         <Text style={styles.commentSectionTitle}>댓글</Text>
@@ -120,12 +157,21 @@ const PostDetail = () => {
             onChangeText={setCommentText}
           />
           <Button title="작성" onPress={handleAddComment} />
-        </View>
-        <FlatList
-          data={comments}
-          renderItem={({ item }) => <Text style={styles.comment}>{item.text}</Text>}
-          keyExtractor={(item) => item.id}
-        />
+        </View> 
+        { comments.length > 0 ?
+          <FlatList
+            data={comments}
+            renderItem={({ item }) => (
+              <View style={styles.commentContainer}>
+                <View style={styles.topRow}>
+                  <Text style={styles.commentAuthor}>{item.author}</Text>
+                  <Text style={styles.commentCreated}>{item.created}</Text>
+                </View>
+                <Text style={styles.commentContent}>{item.content}</Text>
+              </View>
+            )}
+          />
+        : <Text></Text>}
       </View>
     </View>
   );
@@ -196,7 +242,36 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
   },
-  comment: {
+  commentContainer: {
+    flexDirection: 'column',
+    marginBottom: 10,
+    // backgroundColor: '#555',
+    borderRadius: 5,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  commentAuthor: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    paddingTop: 10,
+    paddingLeft: 10,
+  },
+  commentCreated: {
+    textAlign: 'right',
+    fontSize: 14,
+    color: '#555',
+    paddingTop: 10,
+    paddingRight: 10,
+  },
+  commentContent: {
+    fontSize: 16,
+    paddingLeft: 20,
+    paddingBottom: 10,
+  },
+<!--   comment: {
     fontSize: 16,
     marginVertical: 5,
     padding: 10, // 패딩 조정
@@ -207,8 +282,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 1,
-  },
+  }, -->
 });
-
 
 export default PostDetail;

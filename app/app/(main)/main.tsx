@@ -1,105 +1,226 @@
-import { getCurrentUser, fetchAuthSession } from '@aws-amplify/auth';
-import { Link } from 'expo-router';
-import { useEffect } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchAuthSession } from '@aws-amplify/auth';
 import axios from 'axios';
+import { Link, useFocusEffect, usePathname } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet, Text, Linking, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import Swiper from 'react-native-swiper';
 import { api } from '@/config.json';
 
-interface UserData { // 사용자 데이터 인터페이스 정의
-  uid: string; // 사용자 ID
-  username: string; // 사용자 이름
-  nickname: string; // 닉네임
-  email: string; // 이메일
-  gender: string; // 성별
-  birthday: string; // 생일
-  locale: string; // 지역
-  regdate: string; // 등록일
-  tokens: {
-    accessToken: string; // 액세스 토큰
-    idToken: string; // ID 토큰
-  };
+interface Slide {
+  src: any;
+  caption: string;
 }
 
-async function getUser(): Promise<void> { // 사용자 정보를 가져오는 비동기 함수
-  try {
-    const { userId, username } = await getCurrentUser(); // 현재 사용자 정보 가져오기
-    const { tokens } = await fetchAuthSession({ forceRefresh: true }); // 인증 세션 가져오기
-    const accessToken = tokens?.accessToken.toString() ?? ""; // 액세스 토큰
-    const idToken = tokens?.idToken?.toString() ?? ""; // ID 토큰
-
-    const response = await axios.get(`/v1/user/${username.split("_")[1]}`, {  // 사용자 데이터 가져오기
-      baseURL: api.baseURL, // API 기본 URL 설정
-      headers: { Authorization: idToken }, // 인증 헤더 추가
-    });
-    const data = JSON.parse(response.data.body); // JSON 형식으로 응답 데이터 파싱
-
-    const resUser: UserData = { // 사용자 데이터 구조화
-      uid: userId,
-      username: username,
-      nickname: data.nickname,
-      email: data.email,
-      gender: data.gender ?? '', // 성별 기본값 설정
-      birthday: data.birthday ?? '', // 생일 기본값 설정
-      locale: data.locale ?? '', // 지역 기본값 설정
-      regdate: data.regdate,
-      tokens: {
-        accessToken: accessToken,
-        idToken: idToken
-      }
-    };
-    await AsyncStorage.setItem("user", JSON.stringify(resUser)); // AsyncStorage에 사용자 정보 저장
-
-  } catch (error) {
-    console.error(error);
-    console.log("Not signed in"); // 로그인 안 되어 있는 경우 로그 출력
-  }
+interface Post {
+  id: number;
+  title: string;
 }
 
-exports.getUser = getUser
+export default function MainScreen() {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [slides, setSlides] = useState<Slide[]>([
+    { src: require('@/assets/images/banner1.png'), caption: 'Example' },
+    { src: require('@/assets/images/banner2.png'), caption: 'Example' },
+    { src: require('@/assets/images/banner3.png'), caption: 'Example' },
+    { src: require('@/assets/images/banner4.png'), caption: 'Example' },
+  ]);
 
-const MainScreen = () => {
   useEffect(() => {
-    getUser(); // 컴포넌트 마운트 시 사용자 정보 가져오기
-  }, []);
+      loadPosts();
+  }, [])
+
+  
+  const loadPosts = async () => {
+    try {
+      const { tokens } = await fetchAuthSession();
+      const response = await axios.get('/v1/post', {
+        baseURL: api.baseURL,
+        headers: { Authorization: tokens?.idToken?.toString() },
+      })
+      const data = JSON.parse(response.data.body);
+      console.log(data)
+      setPosts(data.postList)
+    } catch (error) {
+      console.error("게시글 로드 실패:", error);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <Link href='/' style={styles.button}>  {/* 로그인 페이지로 이동하는 링크 */}
-        <Text style={styles.buttonText}>로그인</Text>
-      </Link>
-      <Link href='/mypage' style={styles.button}> {/* 마이 페이지로 이동하는 링크 */}
-        <Text style={styles.buttonText}>마이페이지</Text>
-      </Link>
-      <Link href='/question1' style={styles.button}> {/* 질문 1 페이지로 이동하는 링크 */}
-        <Text style={styles.buttonText}>Question1 테스트</Text>
-      </Link>
-      <Link href='/postlist' style={styles.button}> {/* 게시판 페이지로 이동하는 링크 */}
-        <Text style={styles.buttonText}>게시판</Text>
-      </Link>
-      <Link href='/chatbot' style={styles.button}> {/* 챗봇 페이지로 이동하는 링크 */}
-        <Text style={styles.buttonText}>챗봇</Text>
-      </Link>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Travelmakers</Text>
+        </View>
+        <View style={styles.swiperContainer}>
+          <Swiper style={styles.swiper} showsPagination={true} autoplay={true}>
+            { slides.map(slide => 
+              <View style={styles.slide}>
+                <Image source={slide.src} style={styles.image} />
+              </View>
+            )}
+          </Swiper>
+        </View>
+        <Link push href={'/question1'} asChild>
+          <TouchableOpacity style={styles.recommendButton}>
+            <Text style={styles.recommendButtonText}>여행지 추천받기</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <View style={styles.boardPreview}>
+          <Text style={styles.boardTitle}>최근 게시글</Text>
+            {posts.length > 0 ? (
+              posts.slice(0, 5).map(post => (
+                <Link push href={{ pathname: '/postdetail', params: { pid: post.id} }} asChild>
+                  <TouchableOpacity>
+                    <View style={styles.boardItem}>
+                      <Text style={styles.boardItemTitle}>{post.title}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </Link>
+              ))
+            ) : (
+            // 게시글이 없는 경우
+            [...Array(5)].map((_, index) => (
+              <View key={index} style={styles.boardItem}>
+                <Text style={styles.boardItemTitle}></Text>
+              </View>
+            ))
+          )}
+        </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({ // 스타일 정의
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
   container: {
     flex: 1,
-    justifyContent: 'center', // 세로 가운데 정렬
-    alignItems: 'center', // 가로 가운데 정렬
+    padding: 20,
+    backgroundColor: '#FFF',
+    // justifyContent: 'center',
+    // alignItems: 'center',
   },
   button: {
     padding: 10,
-    backgroundColor: '#007BFF', // 버튼 배경색
-    borderRadius: 5, // 버튼 모서리 둥글게
-    margin: 10, // 버튼 간격
+    backgroundColor: '#007BFF',
+    borderRadius: 5,
+    margin: 10,
   },
   buttonText: {
-    color: '#FFFFFF', // 버튼 텍스트 색상
-    fontSize: 16, // 버튼 텍스트 크기
+    color: '#FFFFFF',
+    fontSize: 16,
   },
+  header: {
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
+    marginTop: 30,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginBottom: 10,
+  },
+  swiperContainer: {
+    height: 350,
+  },
+  menuIcon: {
+    fontSize: 24,
+  },
+  title: {
+    fontSize: 30,
+    fontFamily: 'Montserrat-VariableFont_wght',
+    fontWeight: 'bold',
+    color: '#007AFF',
+    marginBottom: 10,
+  },
+  swiper: {
+    height: 350,
+  },
+  slide: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hotTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    fontFamily: 'Jua-Regular',
+    textAlign: 'center',
+  },
+  hot: {
+    color: 'red',
+    fontFamily: 'Jua-Regular',
+  },
+  image: {
+    width: '100%',
+    height: 300,
+    borderRadius: 10,
+    resizeMode: 'cover',
+  },
+  boardSlide: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  boardTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    fontFamily: 'Jua-Regular',
+    marginBottom: 10,
+  },
+  board: {
+    width: '90%',
+    height: 200,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recommendButton: {
+    padding: 15,
+    backgroundColor: '#007AFF', // 버튼 색상
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  recommendButtonText: {
+    color: '#fff',
+    fontSize: 18, // 버튼 텍스트 크기 조정
+    fontWeight: 'bold',
+    fontFamily: 'Jua-Regular', // 글꼴을 Jua-Regular로 설정
+    // fontSize: 18,
+    // fontWeight: 'bold',
+  },
+  boardPreview: {
+    marginHorizontal: 20,
+    marginTop: 30,
+  },
+  boardItem: {
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  boardItemTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  boardItemContent: {
+    fontSize: 14,
+    color: '#666',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    backgroundColor: '#f8f8f8',
+  },
+  navIcon: {
+    alignItems: 'center',
+  },
+
 });
 
-export default MainScreen; // 컴포넌트 내보내기

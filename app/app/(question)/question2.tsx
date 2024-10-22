@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, FlatList, Dimensions, SafeAreaView } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { Title } from 'react-native-paper';
 
-export default function QoneScreen() {
-  const [selectedIndex, setSelectedIndex] = useState<Number | null>(null);
+export default function QtwoScreen() {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const { companion } = useLocalSearchParams();
 
-  const handleItemPress = (index: Number) => {
+  const handleItemPress = (index: number) => {
     setSelectedIndex(index);
   };
+
+  const router = useRouter();
+  const handleNext = () => {
+    if (selectedIndex != null) {
+      router.replace({ pathname: '/question3', params: { 
+        companion: companion,
+        duration: items[selectedIndex].label,
+      }})
+    }
+  }
 
   const items = [
     { label: "당일치기", value: 0 },
@@ -23,7 +34,7 @@ export default function QoneScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Title style={styles.title}>여행기간</Title>
+      <Text style={styles.title}>여행 기간은 어느정도인가요?</Text>
       <FlatList
         data={items}
         keyExtractor={(item) => item.value.toString()}
@@ -40,10 +51,8 @@ export default function QoneScreen() {
         )}
       />
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.nextButton}>
-          <Link href='/question3'>
-            <Text style={styles.bottomText}>확인</Text>
-          </Link>
+        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <Text style={styles.bottomText}>다음</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
