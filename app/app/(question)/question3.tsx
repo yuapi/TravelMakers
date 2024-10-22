@@ -54,9 +54,6 @@ export default function QthreeScreen() {
       <View style={styles.bottomContainer}>
       <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.bottomText}>다음</Text>
-          {/* <Link href={{ pathname: '/question2', params: { companion: items[selectedIndex]}}}>
-            <Text style={styles.bottomText}>다음</Text>
-          </Link> */}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
