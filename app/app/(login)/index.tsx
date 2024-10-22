@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
 import { Text, View } from '@/components/Themed';
+
 import { Link, router } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { Amplify } from 'aws-amplify';
