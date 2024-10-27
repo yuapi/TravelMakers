@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Button, FlatList } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Button, FlatList, Animated } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { fetchAuthSession } from '@aws-amplify/auth';
 import axios from 'axios';
@@ -13,53 +13,76 @@ interface Destination {
 }
 
 const RecommendDestination = () => {
-
-  const example = [
-    {
-      name: "도쿄 미식 투어",
-      description: "일본 도쿄의 다채로운 미식 세계를 경험하는 당일치기 여행입니다. 전통적인 스시와 라멘에서부터 최신 트렌드 레스토랑까지 다양한 음식을 맛볼 수 있습니다.",
-      continent: "아시아",
-      imageUrl: "https://haveagood-holiday-com.s3.ap-northeast-1.amazonaws.com/wp-content/uploads/2024/02/15171518/263.webp",
-    },
-    {
-      name: "파리 미슐랭 레스토랑 투어",
-      description: "미슐랭 스타 셰프의 섬세한 요리와 프랑스 와인을 즐기는 고급 미식 투어입니다. 파리의 유명 레스토랑을 방문하여 잊지 못할 미식 경험을 선사합니다.",
-      continent: "유럽",
-      imageUrl: "https://gongu.copyright.or.kr/gongu/wrt/cmmn/wrtFileImageView.do?wrtSn=11288720&filePath=L2Rpc2sxL25ld2RhdGEvMjAxNS8wMi9DTFM2OS9OVVJJXzAwMV8wMjA2X251cmltZWRpYV8yMDE1MTIwMw==&thumbAt=Y&thumbSe=b_tbumb&wrtTy=10006",
-    },
-    {
-      name: "뉴욕 푸드 트럭 투어",
-      description: "뉴욕의 다양한 푸드 트럭을 탐험하며 다채로운 음식을 맛보는 당일치기 투어입니다.",
-      continent: "북아메리카",
-      imageUrl: "https://images.unsplash.com/photo-1571191007613-1b587aed0f47?q=80&w=2529&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-  ]
-
   const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const params = useLocalSearchParams();
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    getBotResponse();
-  })
+  const dotOpacities = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0)
+  ]).current;
 
-  const getBotResponse = async () => {
+  const startLoadingAnimation = () => {
+    const animations = dotOpacities.map((dot, index) =>
+      Animated.sequence([
+        Animated.delay(index * 150),
+        Animated.timing(dot, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(dot, { toValue: 0, duration: 300, useNativeDriver: true })
+      ])
+    );
+
+    Animated.loop(
+      Animated.stagger(150, animations)
+    ).start();
+  };
+  
+  const getImages = async (query: string[]) => {
+    try {
+      const { tokens } = await fetchAuthSession();
+      const response = await axios.post(`/v1/images`, {
+        query: query
+      },
+      {
+        baseURL: api.baseURL,
+        headers: { Authorization: tokens?.idToken?.toString() },
+      });
+      console.log(response)
+      if (response.data.statusCode != 200) throw new Error('API 응답 오류');
+      const data = JSON.parse(response.data.body);
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw new Error("이미지를 불러오는데 실패했습니다");
+    }
+  }
+
+  const getBotResponse = async (retryCount = 0) => {
     try {
       let prompt = `당신은 해외 여행 국가를 추천하는 여행 전문가입니다. 
       사용자의 특성에 맞는 여행지를 3개 추천해주세요. 
       추천 결과는 정해진 형식에 맞춰 제공해야 하며, 다른 설명이나 추가 정보 없이 오직 요청된 형식으로만 응답해야 합니다.
+      
+      중요: 추천하는 여행지는 반드시 국가 단위여야 합니다. 도시, 지역, 산, 섬 등은 허용되지 않습니다. 예를 들어, '일본'은 가능하지만 '도쿄', '홋카이도', '후지산' 등은 불가능합니다.
+      
       사용자 특성:
       - 함께 여행을 갈 사람: ${params.companion}
       - 여행 기간: ${params.duration}
       - 여행 예산: ${params.budget}
       - 원하는 여행 테마: ${params.theme}
       - 선호하는 여행 일정: ${params.complexity}
+      
       응답 형식:
-      - name
-      - description
-      - continent
-      - imageUrl
+      - name: [국가 이름만 입력]
+      - description: [국가에 대한 간단한 설명, 2-3문장으로 제한]
+      - continent: [대륙 이름]
+      - imageUrl: [이 필드는 비워두세요. 'no_image' 라고만 입력하세요.]
+      
       각 항목에 대해 간결하고 정확한 정보를 제공하세요. 
-      설명은 2-3문장으로 제한하고, 이미지 URL은 실제 존재하는 유효한 링크여야 합니다. 
+      설명은 2-3문장으로 제한합니다.
       응답에는 오직 위의 네 가지 항목만 포함되어야 하며, 다른 설명이나 추가 정보는 제외해야 합니다.`
 
       const { tokens } = await fetchAuthSession();
@@ -70,48 +93,91 @@ const RecommendDestination = () => {
       {
         baseURL: api.baseURL,
         headers: { Authorization: tokens?.idToken?.toString() },
-        
       });
-      if (response.data.statusCode != 200) throw (response.data);
+      if (response.data.statusCode != 200) throw new Error('API 응답 오류');
 
       const data = JSON.parse(response.data.body);
-      console.log(data);
-      const lines = data.content.split('\n');
-      let dest: Destination[] = []
-      let tempDest: Destination = {
-        name: '',
-        continent: '',
-        description: '',
-        imageUrl: '',
-      }
-      lines.map((line: string) => {
-        if (line.startsWith('- name:')) {
-          const value = line.split(':')[1].trim();
-          tempDest.name = value;
-        }
-        else if (line.startsWith('- description:')) {
-          const value = line.split(':')[1].trim();
-          tempDest.description = value;
-        }
-        else if (line.startsWith('- continent:')) {
-          const value = line.split(':')[1].trim();
-          tempDest.continent = value;
-        }
-        else if (line.startsWith('- imageUrl:')) {
-          const value = line.split(':')[1].trim();
-          tempDest.imageUrl = value;
-          dest.push(tempDest);
-        }
-      })
-      console.log(dest);
+      let results = await parseDestinations(data.content);
 
+      if (results.length === 0) throw new Error("파싱된 결과 없음")
 
+      // const query = results.map(destination => destination.name);
+      // const images = await getImages(query);
+
+      // results = results.map((dest, index) => ({
+      //   ...dest,
+      //   imageUrl: images[index]
+      // }));
+
+      console.log(results);
+
+      setDestinations(results);
+      setIsLoading(false);
+      setError(null)
     } catch (error) {
       console.log(error);
+      if (retryCount < 2) {
+        setTimeout(() => getBotResponse(retryCount + 1), 1000);
+      } else {
+        setIsLoading(false);
+        setError("추천 서버에 연결할 수 없습니다");
+      }
     }
   }
 
-    const renderItem = ({ item }: { item: Destination }) => (
+  useEffect(() => {
+    if (destinations.length === 0 && !error) {
+      getBotResponse();
+    }
+    startLoadingAnimation();
+  }, []);
+
+  const parseDestinations = (text: string): Destination[] => {
+    const destinations: Destination[] = [];
+    const destinationTexts = text.trim().split('\n\n');
+
+    for (const destText of destinationTexts) {
+      const lines = destText.split('\n');
+      const destination: Partial<Destination> = {};
+  
+      for (const line of lines) {
+        const [key, ...valueParts] = line.split(': ');
+        const value = valueParts.join(': ').trim();
+  
+        switch (key.trim()) {
+          case '- name':
+            destination.name = value;
+            break;
+          case '- continent':
+            destination.continent = value;
+            break;
+          case '- description':
+            destination.description = value;
+            break;
+          case '- imageUrl':
+            destination.imageUrl = value;
+            break;
+        }
+      }
+  
+      if (
+        destination.name &&
+        destination.continent &&
+        destination.description &&
+        destination.imageUrl
+      ) {
+        destinations.push(destination as Destination);
+      }
+    }
+    
+    if (destinations.length === 0) {
+      throw new Error('유효한 여행지 정보를 찾을 수 없습니다.');
+    }
+  
+    return destinations;
+  };
+
+  const renderItem = ({ item }: { item: Destination }) => (
     <View style={styles.card}>
       <Image source={{ uri: item.imageUrl }} style={styles.image} />
       <View style={styles.textContainer}>
@@ -122,6 +188,31 @@ const RecommendDestination = () => {
     </View>
   );
 
+  const renderLoadingText = () => {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>추천 결과를 불러오는 중</Text>
+        <View style={styles.dotContainer}>
+          {dotOpacities.map((dot, index) => (
+            <Animated.Text key={index} style={[styles.dot, { opacity: dot }]}>.</Animated.Text>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  if (isLoading) {
+    return renderLoadingText();
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
   return (
     <FlatList
       data={destinations}
@@ -129,23 +220,6 @@ const RecommendDestination = () => {
       keyExtractor={(item) => item.name}
       contentContainerStyle={styles.list}
     />
-  
-//   return (
-//     <ScrollView contentContainerStyle={styles.container}>
-//       <Text style={styles.title}>추천 여행지</Text>
-//       {countries.map((country) => (
-//         <View style={styles.card}>
-//           <Image source={{ uri: country.imageUrl }} style={styles.image} />
-//           <View style={styles.cardContent}>
-//             <Text style={styles.country}>{country.name}</Text>
-//             <Text style={styles.description}>{country.description}</Text>
-//             <TouchableOpacity style={styles.button}>
-//               <Link href={{ pathname: '/chatbot', params: { country: country.name }}} style={styles.linkText}>선택</Link>
-//             </TouchableOpacity>
-//           </View>
-//         </View>
-//       ))}
-//     </ScrollView>
   );
 };
 
@@ -181,6 +255,31 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     marginBottom: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 20,
+    marginBottom: 10,
+  },
+  dotContainer: {
+    flexDirection: 'row',
+  },
+  dot: {
+    fontSize: 40,
+    marginHorizontal: 2,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 18,
+    textAlign: 'center',
   },
 //   container: {
 //     flexGrow: 1,
