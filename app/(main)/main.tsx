@@ -79,9 +79,8 @@ export default function MainScreen() {
                 </Link>
               ))
             ) : (
-            // 게시글이 없는 경우
-            [...Array(5)].map((_, index) => (
-              <View key={index} style={styles.boardItem}>
+            [...Array(5)].map(() => (
+              <View style={styles.boardItem}>
                 <Text style={styles.boardItemTitle}></Text>
               </View>
             ))
@@ -101,8 +100,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#FFF',
-    // justifyContent: 'center',
-    // alignItems: 'center',
   },
   button: {
     padding: 10,
@@ -115,8 +112,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   header: {
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
     marginTop: 30,
     backgroundColor: '#FFF',
     borderBottomWidth: 1,
@@ -180,17 +175,15 @@ const styles = StyleSheet.create({
   },
   recommendButton: {
     padding: 15,
-    backgroundColor: '#007AFF', // 버튼 색상
+    backgroundColor: '#007AFF', 
     borderRadius: 5,
     alignItems: 'center',
   },
   recommendButtonText: {
     color: '#fff',
-    fontSize: 18, // 버튼 텍스트 크기 조정
+    fontSize: 18, 
     fontWeight: 'bold',
-    fontFamily: 'Jua-Regular', // 글꼴을 Jua-Regular로 설정
-    // fontSize: 18,
-    // fontWeight: 'bold',
+    fontFamily: 'Jua-Regular', 
   },
   boardPreview: {
     marginHorizontal: 20,
