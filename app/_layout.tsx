@@ -55,10 +55,8 @@ function RootLayoutNav() {
         <Stack.Screen name="(main)" options={{ headerShown: false }} />
         <Stack.Screen name="(post)" options={{ headerShown: false }} />
         <Stack.Screen name="(question)" options={{ headerShown: false }} />
-        <Stack.Screen name="(chatbot)" options={{ headerShown: false }} />
         <Stack.Screen name="(recommendation)" options={{ headerShown: false }} />
         <Stack.Screen name="(mypage)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>
   );

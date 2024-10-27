@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Button, FlatList } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { fetchAuthSession } from '@aws-amplify/auth';
 import axios from 'axios';
 import { api } from '@/config.json';
 
-interface Country {
+interface Destination {
   name: string;
   continent: string;
   description: string;
@@ -35,7 +35,7 @@ const RecommendDestination = () => {
     },
   ]
 
-  const [countries, setCountries] = useState<Country[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
   const params = useLocalSearchParams();
 
   useEffect(() => {
@@ -77,8 +77,8 @@ const RecommendDestination = () => {
       const data = JSON.parse(response.data.body);
       console.log(data);
       const lines = data.content.split('\n');
-      let countries: Country[] = []
-      let tempCountry: Country = {
+      let dest: Destination[] = []
+      let tempDest: Destination = {
         name: '',
         continent: '',
         description: '',
@@ -87,23 +87,23 @@ const RecommendDestination = () => {
       lines.map((line: string) => {
         if (line.startsWith('- name:')) {
           const value = line.split(':')[1].trim();
-          tempCountry.name = value;
+          tempDest.name = value;
         }
         else if (line.startsWith('- description:')) {
           const value = line.split(':')[1].trim();
-          tempCountry.description = value;
+          tempDest.description = value;
         }
         else if (line.startsWith('- continent:')) {
           const value = line.split(':')[1].trim();
-          tempCountry.continent = value;
+          tempDest.continent = value;
         }
         else if (line.startsWith('- imageUrl:')) {
           const value = line.split(':')[1].trim();
-          tempCountry.imageUrl = value;
-          countries.push(tempCountry);
+          tempDest.imageUrl = value;
+          dest.push(tempDest);
         }
       })
-      console.log(countries);
+      console.log(dest);
 
 
     } catch (error) {
@@ -146,7 +146,7 @@ const RecommendDestination = () => {
 //         </View>
 //       ))}
 //     </ScrollView>
-//   );
+  );
 };
 
 const { width } = Dimensions.get('window');

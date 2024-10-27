@@ -271,18 +271,18 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingBottom: 10,
   },
-<!--   comment: {
-    fontSize: 16,
-    marginVertical: 5,
-    padding: 10, // 패딩 조정
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 1,
-  }, -->
+  // comment: {
+  //   fontSize: 16,
+  //   marginVertical: 5,
+  //   padding: 10, // 패딩 조정
+  //   backgroundColor: '#ffffff',
+  //   borderRadius: 8,
+  //   shadowColor: '#000',
+  //   shadowOffset: { width: 0, height: 1 },
+  //   shadowOpacity: 0.1,
+  //   shadowRadius: 3,
+  //   elevation: 1,
+  // },
 });
 
 export default PostDetail;
