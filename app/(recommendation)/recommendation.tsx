@@ -3,11 +3,18 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions
 import { Link, useLocalSearchParams } from 'expo-router';
 import { fetchAuthSession } from '@aws-amplify/auth';
 import axios from 'axios';
+import { Asset } from 'expo-asset';
 import { api } from '@/config.json';
+import { imageMap } from '@/scripts/imageMap.js';
+const typedImageMap = imageMap as ImageMap;
 
 interface User {
-  gender: string
-  age: string
+  gender: string;
+  age: string;
+}
+
+interface ImageMap {
+  [key: string]: any;
 }
 
 interface Destination {
@@ -68,21 +75,48 @@ const RecommendDestination = () => {
       }
     }
   }
-  
+
   const getImages = async (query: string[]) => {
+    const imageResults: { q: string; imagePath: string }[] = [];
+
     try {
-      const { tokens } = await fetchAuthSession();
-      const response = await axios.post(`/v1/images`, {
-        query: query
-      },
-      {
-        baseURL: api.baseURL,
-        headers: { Authorization: tokens?.idToken?.toString() },
-      });
-      console.log(response.data)
-      if (response.data.statusCode != 200) throw new Error('API 응답 오류');
-      const data = JSON.parse(response.data.body);
-      return data;
+      const localImages = await Promise.all(
+        query.map(async (q) => {
+          const imageFile = typedImageMap[q];
+          if (imageFile) {
+            try {
+              const localImage = await Asset.loadAsync(imageFile);
+              return { q, imagePath: localImage[0].localUri ?? '' };
+            } catch (error) {
+              console.error(`로컬 이미지 로드 실패: ${q}`, error);
+              return { q, imagePath: null };
+            }
+          }
+          return { q, imagePath: null };
+        })
+      );
+
+      const apiQueries = localImages.filter(img => img.imagePath === null).map(img => img.q);
+      imageResults.push(...localImages.filter(img => img.imagePath !== null));
+
+      if (apiQueries.length > 0) {
+        const { tokens } = await fetchAuthSession();
+        const response = await axios.post(`/v1/images`, {
+          query: apiQueries
+        },
+        {
+          baseURL: api.baseURL,
+          headers: { Authorization: tokens?.idToken?.toString() },
+        });
+
+        if (response.data.statusCode != 200) throw new Error('API 응답 오류');
+
+        const data = JSON.parse(response.data.body);
+        data.forEach((image: string, index: number) => {
+          imageResults.push({ q: apiQueries[index], imagePath: image });
+        });
+      }
+      return imageResults;
     } catch (error) {
       console.log(error);
       throw new Error("이미지를 불러오는데 실패했습니다");
@@ -139,7 +173,7 @@ const RecommendDestination = () => {
       console.log(images[0])
       results = results.map((dest, index) => ({
         ...dest,
-        imageUrl: images[index]
+        imageUrl: images[index].imagePath
       }));
 
       console.log(results);
