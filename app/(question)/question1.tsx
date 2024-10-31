@@ -18,12 +18,11 @@ export default function QoneScreen() {
   }
 
   const items = [
-    { label: "남자 혼자", value: 0 },
-    { label: "여자 혼자", value: 1 },
-    { label: "친구들과", value: 2 },
-    { label: "부모님과", value: 3 },
-    { label: "연인과", value: 4 },
-    { label: "미정", value: 5 },
+    { label: "혼자", value: 0 },
+    { label: "친구들과", value: 1 },
+    { label: "부모님과", value: 2 },
+    { label: "연인과", value: 3 },
+    { label: "미정", value: 4 },
   ];
 
   return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Button, FlatList, Animated } from 'react-native';
-import { Link, useLocalSearchParams } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { fetchAuthSession } from '@aws-amplify/auth';
 import axios from 'axios';
 import { Asset } from 'expo-asset';
@@ -26,9 +26,11 @@ interface Destination {
 
 const RecommendDestination = () => {
   const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [user, setUser] = useState<User>({ gender: "비공개", age: "비공개" });
   const [isLoading, setIsLoading] = useState(true);
-  const params = useLocalSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const params = useLocalSearchParams();
+  const router = useRouter();
 
   const dotOpacities = useRef([
     new Animated.Value(0),
@@ -62,17 +64,15 @@ const RecommendDestination = () => {
       const data = JSON.parse(response.data.body);
 
       const currentYear = new Date().getFullYear();
-
-      return {
+      const currentUser = {
         gender: data.gender === "Male" ? "남자" : data.gender === "Female" ? "여자" : "비공개",
         age: data.birthday ? (currentYear - parseInt(data.birthday.split('.')[0])).toString() : "비공개"
       };
+      setUser(currentUser);
+      return currentUser;
     } catch (error) {
       console.error('Error from fetching MyData:', error);
-      return {
-        gender: "비공개",
-        age: "비공개"
-      }
+      return user;
     }
   }
 
@@ -125,8 +125,8 @@ const RecommendDestination = () => {
 
   const getBotResponse = async (retryCount = 0) => {
     try {
-      const user: User = await loadUser();
-
+      let userData: User = await loadUser();
+      console.log('userdata', userData);
       let prompt = `당신은 해외 여행 국가를 추천하는 여행 전문가입니다. 
       사용자의 특성에 맞는 여행지를 3개 추천해주세요. 
       추천 결과는 정해진 형식에 맞춰 제공해야 하며, 다른 설명이나 추가 정보 없이 오직 요청된 형식으로만 응답해야 합니다.
@@ -134,8 +134,8 @@ const RecommendDestination = () => {
       중요: 추천하는 여행지는 반드시 국가 단위여야 합니다. 도시, 지역, 산, 섬 등은 허용되지 않습니다. 예를 들어, '일본'은 가능하지만 '도쿄', '홋카이도', '후지산' 등은 불가능합니다.
       
       사용자 특성:
-      - 성별: ${user.gender}
-      - 나이: ${user.age}
+      - 성별: ${userData.gender}
+      - 나이: ${userData.age}
       - 함께 여행을 갈 사람: ${params.companion}
       - 여행 기간: ${params.duration}
       - 여행 예산: ${params.budget}
@@ -245,13 +245,21 @@ const RecommendDestination = () => {
     return destinations;
   };
 
+  const handleSelect = (destination: string) => {
+    router.replace({ pathname: '/chatbot', params: {
+      ...params,
+      ...user,
+      destination
+    }})
+  }
+
   const renderItem = ({ item }: { item: Destination }) => (
     <View style={styles.card}>
       <Image source={{ uri: item.imageUrl }} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.name}</Text>
         <Text style={styles.description}>{item.description}</Text>
-        <Button title="선택" onPress={() => alert(`${item.name} 선택됨`)} />
+        <Button title="선택" onPress={() => handleSelect(item.name)} />
       </View>
     </View>
   );
