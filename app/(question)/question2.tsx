@@ -51,8 +51,8 @@ export default function QtwoScreen() {
         )}
       />
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-          <Text style={styles.bottomText}>다음</Text>
+        <TouchableOpacity style={[styles.nextButton, selectedIndex === null && styles.disabledButton]} onPress={handleNext} disabled={selectedIndex === null}>
+          <Text style={[styles.bottomText, selectedIndex === null && styles.disabledText]}>다음</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -117,5 +117,11 @@ const styles = StyleSheet.create({
     right: 0,
     paddingVertical: 16,
     paddingHorizontal: 24,
+  },
+  disabledButton: {
+    backgroundColor: "#cccccc",
+  },
+  disabledText: {
+    color: "#666666",
   },
 });

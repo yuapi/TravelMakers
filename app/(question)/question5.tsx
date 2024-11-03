@@ -50,8 +50,8 @@ export default function QfiveScreen() {
         )}
       />
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.nextButton} onPress={handleResult}>
-          <Text style={styles.bottomText}>다음</Text>
+        <TouchableOpacity style={[styles.nextButton, selectedIndex === null && styles.disabledButton]} onPress={handleResult} disabled={selectedIndex === null}>
+          <Text style={[styles.bottomText, selectedIndex === null && styles.disabledText]}>완료</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -116,5 +116,11 @@ const styles = StyleSheet.create({
     right: 0,
     paddingVertical: 16,
     paddingHorizontal: 24,
+  },
+  disabledButton: {
+    backgroundColor: "#cccccc",
+  },
+  disabledText: {
+    color: "#666666",
   },
 });

@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, Dimensions, View, Modal, Image } from 'react-native';
 import { Text } from '@/components/Themed';
 import axios from 'axios';
 import { api } from '@/config.json';
 import { fetchAuthSession } from '@aws-amplify/core';
+import { useLocalSearchParams } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,6 +20,7 @@ export default function ChatbotScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedModel, setSelectedModel] = useState('Gemini-1.5-flash');
   const scrollViewRef = useRef<ScrollView>(null); 
+  const params = useLocalSearchParams();
 
   const modelIcon = {
     Gemini: <Image style={styles.modelButtonIcon} source={require('@/assets/images/gemini-icon.png')} />,
@@ -27,7 +29,45 @@ export default function ChatbotScreen() {
     Perplexity: <Image style={styles.modelButtonIcon} source={require('@/assets/images/perplexity-icon.png')} />,
   }
 
-  async function getBotResponse(prompt: string, messages: Array<message | null>): Promise<message> {
+  useEffect(() => {
+    if (messages.length === 0 && params.destination) {
+      loadDestination()
+    }
+  }, []);
+
+  async function loadDestination() {
+    let prompt = `사용자의 특성 정보를 바탕으로 선택한 여행지에 대한 여행 정보와 맞춤형 여행 계획을 제공해주세요.
+    단, 응답에는 사용자 특성 정보(나이, 예산, 여행 동반자, 성별 등)를 포함하지 마세요.
+      
+    사용자 특성:
+    1. 나이: ${params.age}세
+    2. 예산: ${params.budget} 원
+    3. 여행 동반자: ${params.companion} 
+    4. 여행 일정 복잡도: ${params.complexity} 
+    5. 선택한 여행지: ${params.destination}
+    6. 여행 기간: ${params.duration}
+    7. 성별: ${params.gender}
+    8. 여행 테마: ${params.theme}
+    
+    제공할 정보:
+    - 선택한 여행지에 대한 주요 관광 명소
+    - 추천 활동 및 체험
+    - 사용자의 일정에 맞춘 추천 일정(여행 기간 동안의 세부 일정)
+    - 예산에 따른 비용 분배 (숙박, 식사, 교통비 등)
+    - 해당 여행지에서 유의해야 할 팁 및 조언
+    
+    위 정보를 바탕으로 사용자가 선택한 여행지에 맞춤형 여행 계획을 작성해주세요.
+    단, 응답에는 사용자 특성 정보(나이, 예산, 여행 동반자, 성별 등)를 포함하지 마세요.`
+    console.log(prompt);
+    const botResponse: message = await getBotResponse(prompt, messages, messages.length)
+    setMessages(prevMessages => [...prevMessages, botResponse]);
+
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }
+
+  async function getBotResponse(prompt: string, messages: Array<message | null>, prvId=messages.length + 1): Promise<message> {
     try {
       const { tokens } = await fetchAuthSession();
 
@@ -46,7 +86,7 @@ export default function ChatbotScreen() {
       const data = JSON.parse(response.data.body);
     
       const botMsg: message = {
-        id: messages.length + 2,
+        id: prvId + 1,
         content: data.content,
         role: "assistant"
       }
@@ -57,7 +97,7 @@ export default function ChatbotScreen() {
       console.log(error);
   
       const errorMsg: message = {
-        id: messages.length + 2,
+        id: prvId + 1,
         content: "서버에 연결할 수 없습니다.",
         role: "assistant"
       }
@@ -94,7 +134,7 @@ export default function ChatbotScreen() {
       <ScrollView 
         ref={scrollViewRef} 
         style={styles.chatContainer} 
-        contentContainerStyle={{ paddingBottom: 100 }}>
+        contentContainerStyle={{ paddingBottom: 5 }}>
         {messages.map((msg) => (
           <View key={msg.id} style={[styles.messageBubble, msg.role === 'user' ? styles.userMessage : styles.botMessage]}>
             <Text style={[styles.messageText, msg.role === 'assistant' ? styles.botMessageText : styles.userMessageText]}>

@@ -67,17 +67,17 @@ export default function MainScreen() {
 
         <View style={styles.boardPreview}>
           <Text style={styles.boardTitle}>최근 게시글</Text>
-          {posts.length > 0 ? (
-            posts.slice(0, 5).map(post => (
-              <Link push href={{ pathname: '/postdetail', params: { pid: post.id } }} asChild key={post.id}>
-                <TouchableOpacity>
-                  <View style={styles.boardItem}>
-                    <Text style={styles.boardItemTitle}>{post.title}</Text>
-                  </View>
-                </TouchableOpacity>
-              </Link>
-            ))
-          ) : (
+            {posts.length > 0 ? (
+              posts.slice(0, 5).map(post => (
+                <Link push href={{ pathname: '/postdetail', params: { pid: post.id} }} asChild key={post.id}>
+                  <TouchableOpacity>
+                    <View style={styles.boardItem}>
+                      <Text style={styles.boardItemTitle}>{post.title}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </Link>
+              ))
+            ) : (
             [...Array(5)].map((_, index) => (
               <View style={styles.boardItem} key={index}>
                 <Text style={styles.boardItemTitle}></Text>
