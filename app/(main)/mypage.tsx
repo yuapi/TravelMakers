@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, SafeAreaView } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import { Caption } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, useFocusEffect } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { fetchAuthSession, signOut, deleteUser } from '@aws-amplify/auth';
 import axios from 'axios';
@@ -10,37 +10,46 @@ import { api } from '@/config.json';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface MyData {
-  nickname: string
-  email: string
-  gender: string
-  birthday: string
-  locale: string
+  nickname: string;
+  email: string;
+  gender: string;
+  birthday?: string; 
+  locale: string;
 }
 
 export default function MyPage() {
-	const [user, setUser] = useState<MyData | null>(null);
-
-  useEffect(() => {
-    getMyData()
-	}, []);
+  const [user, setUser] = useState<MyData | null>(null);
 
   const getMyData = async (): Promise<void> => {
     try {
       const { tokens } = await fetchAuthSession();
       const response = await axios.get('/v1/user', {
         baseURL: api.baseURL,
-        headers: { Authorization: tokens?.idToken?.toString() }
-      })
+        headers: { Authorization: tokens?.idToken?.toString() },
+      });
       const data = JSON.parse(response.data.body);
-      setUser(data);
+      setUser(prevUser => ({
+        nickname: data.nickname || prevUser?.nickname || "기존 닉네임",
+        email: data.email || prevUser?.email || "기존 이메일",
+        gender: data.gender || prevUser?.gender || "비공개",
+        birthday: data.birthday || prevUser?.birthday || "비공개",
+        locale: data.locale || prevUser?.locale || "기존 지역",
+      }));
     } catch (error) {
-      console.error('Error from fetching MyData:', error);
+      console.error('Error fetching MyData:', error);
     }
-  }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      getMyData();
+    }, [])
+  );
 
   const router = useRouter();
   const [fontsLoaded] = useFonts({
-    'Jua-Regular': require('../../assets/fonts/Jua-Regular.ttf'),
+    'Montserrat-VariableFont_wght': require('../../assets/fonts/Montserrat-VariableFont_wght.ttf'), 
+    'NanumGothic': require('../../assets/fonts/NanumGothic.otf'), 
   });
 
   const handleEmailPress = () => {
@@ -50,26 +59,25 @@ export default function MyPage() {
   const handleAccountDeletion = () => {
     Alert.alert('계정 삭제', '정말로 이 계정을 삭제하시겠습니까?', [
       { text: '취소', style: 'cancel' },
-      { 
-        text: '삭제', 
+      {
+        text: '삭제',
         onPress: async () => {
           try {
             const { tokens } = await fetchAuthSession();
             const response = await axios.delete('/v1/user', {
               baseURL: api.baseURL,
-              headers: { Authorization: tokens?.idToken?.toString() }
-            })
-            console.log(response.data)
-            if (response.data.statusCode != 200) throw (response.data.statusCode);
+              headers: { Authorization: tokens?.idToken?.toString() },
+            });
+            if (response.data.statusCode !== 200) throw response.data.statusCode;
 
             await deleteUser();
 
             Alert.alert('알림', '계정이 정상적으로 삭제되었습니다.');
             router.replace('/');
           } catch (error) {
-            console.error('Error from deleting User:', error);
+            console.error('Error deleting User:', error);
           }
-        }
+        },
       },
     ]);
   };
@@ -77,12 +85,12 @@ export default function MyPage() {
   const handleLogout = () => {
     Alert.alert('로그아웃', '로그아웃 하시겠습니까?', [
       { text: '취소', style: 'cancel' },
-      { 
+      {
         text: '로그아웃',
         onPress: async () => {
           await signOut();
-          router.replace('/')
-        }
+          router.replace('/');
+        },
       },
     ]);
   };
@@ -93,21 +101,28 @@ export default function MyPage() {
 
   const insets = useSafeAreaInsets();
 
+  const isBirthdayPrivate = (birthday?: string): boolean => {
+    return !birthday || birthday.trim() === ""; 
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={[styles.scrollViewContent, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+       <View style={styles.header}>
         <Text style={styles.title}>마이 페이지</Text>
+        <View style={styles.bar} />
         <View style={styles.nicknameContainer}>
           <Text style={styles.nickname}>닉네임: {user?.nickname ?? "불러오는 중.."}</Text>
         </View>
         <View style={styles.nicknameContainer}>
-          <Text style={styles.nickname}>이메일: {user?.email ?? "불러오는 중.."}</Text>
+          <Text style={[styles.nickname, styles.lightText]}>
+            이메일: {user?.email ?? "불러오는 중.."}
+          </Text>
         </View>
         <View style={styles.nicknameContainer}>
-          <Text style={styles.nickname}>성별: {user?.gender == "Male" ? "남자" : user?.gender == "Female" ? "여자" : "비공개"}</Text>
+          <Text style={styles.nickname}>성별: {user?.gender === "Male" ? "남자" : user?.gender === "Female" ? "여자" : "비공개"}</Text>
         </View>
         <View style={styles.nicknameContainer}>
-          <Text style={styles.nickname}>생년월일: {user?.birthday ?? "비공개"}</Text>
+          <Text style={styles.nickname}>생년월일: {isBirthdayPrivate(user?.birthday) ? "비공개" : user?.birthday}</Text>
         </View>
       </View>
 
@@ -115,23 +130,17 @@ export default function MyPage() {
         <Link href="/profile" asChild>
           <TouchableOpacity style={styles.section}>
             <MaterialCommunityIcons name="account-edit" size={20} color="#007aff" />
-            <Text style={styles.sectionText}>개인정보 수정                                    </Text>
+            <Text style={styles.sectionText}>개인정보 수정</Text>
           </TouchableOpacity>
         </Link>
         <View style={styles.separator} />
         <Link href="/notice" asChild>
           <TouchableOpacity style={styles.section}>
             <MaterialCommunityIcons name="bell" size={20} color="#007aff" />
-            <Text style={styles.sectionText}>공지사항                                         </Text>
+            <Text style={styles.sectionText}>공지사항</Text>
           </TouchableOpacity>
         </Link>
         <View style={styles.separator} />
-        <Link href="/terms" asChild>
-          <TouchableOpacity style={styles.section}>
-            <MaterialCommunityIcons name="book-open-variant" size={20} color="#007aff" />
-            <Text style={styles.sectionText}>약관 및 정책                                      </Text>
-          </TouchableOpacity>
-        </Link>
       </View>
 
       <View style={styles.infoContainer}>
@@ -150,13 +159,9 @@ export default function MyPage() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F9FFFF',
-  },
   container: {
     flex: 1,
-    backgroundColor: '#F9FFFF',
+    backgroundColor: '#FFF',
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -168,12 +173,19 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '700',
     color: '#007aff',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'Montserrat-VariableFont_wght',
     marginBottom: 10,
   },
+  bar: {
+    height: 2.5, 
+    width: '200%', 
+    backgroundColor: '#007AFF',
+    marginTop:5,
+    marginBottom: 10, 
+  },  
   nicknameContainer: {
     backgroundColor: '#ffffff',
     paddingVertical: 12,
@@ -190,7 +202,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#333',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
+  },
+  lightText: {
+    fontWeight: '300', 
   },
   sectionContainer: {
     marginBottom: 24,
@@ -211,46 +226,47 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   sectionText: {
-    fontSize: 18, 
-    color: '#000',
+    fontSize: 16,
+    fontWeight: '500',
     marginLeft: 10,
-    fontFamily: 'Jua-Regular',
+    color: '#333',
+    fontFamily: 'NanumGothic', 
   },
   separator: {
     height: 1,
-    backgroundColor: '#e0e0e0',
-    marginVertical: 12,
+    backgroundColor: '#E6E6E6',
+    marginVertical: 10,
   },
   infoContainer: {
-    marginBottom: 24,
+    alignItems: 'center',
+    marginVertical: 20,
   },
   infoText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 5,
-    fontFamily: 'Jua-Regular',
+    fontSize: 14,
+    color: '#888',
+    fontFamily: 'NanumGothic', 
   },
   deleteButton: {
-    padding: 12,
-    backgroundColor: '#ff4d4d',
-    borderRadius: 5,
+    backgroundColor: '#FF3B30',
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 10,
     alignItems: 'center',
-    marginBottom: 12,
   },
   deleteButtonText: {
     color: '#ffffff',
-    fontSize: 14,
-    fontFamily: 'Jua-Regular',
+    fontSize: 16,
+    fontFamily: 'NanumGothic', 
   },
   logoutButton: {
-    padding: 12,
     backgroundColor: '#007aff',
-    borderRadius: 5,
+    paddingVertical: 12,
+    borderRadius: 8,
     alignItems: 'center',
   },
   logoutButtonText: {
     color: '#ffffff',
-    fontSize: 14,
-    fontFamily: 'Jua-Regular',
+    fontSize: 16,
+    fontFamily: 'NanumGothic', 
   },
 });

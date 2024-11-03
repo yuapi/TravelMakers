@@ -1,12 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Alert, TextInput, Button, FlatList, SafeAreaView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, StyleSheet, Alert, TextInput, Button, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import axios from 'axios';
 import { api } from '@/config.json';
 import { fetchAuthSession, getCurrentUser } from '@aws-amplify/auth';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface PostDetail {
   id: number;
@@ -41,7 +39,7 @@ const PostDetail = () => {
       loadComments();
     }, [])
   );
-  
+
   async function loadUser() {
     const currentUser = await getCurrentUser();
     setUserid(currentUser.userId);
@@ -54,9 +52,7 @@ const PostDetail = () => {
         baseURL: api.baseURL,
         headers: { Authorization: tokens?.idToken?.toString() }
       });
-      console.log(response.data)
       const data = JSON.parse(response.data.body);
-
       setPost(data);
     } catch (error) {
       console.error('게시글 불러오기 실패:', error);
@@ -70,9 +66,7 @@ const PostDetail = () => {
         baseURL: api.baseURL,
         headers: { Authorization: tokens?.idToken?.toString() }
       });
-      console.log(response.data)
       const data = JSON.parse(response.data.body);
-
       setComments(data.commentList);
     } catch (error) {
       console.error('댓글 불러오기 실패:', error);
@@ -80,7 +74,7 @@ const PostDetail = () => {
   }
 
   const handleEdit = () => {
-    router.push({ pathname: "/postform", params: { pid: post?.id }});
+    router.push({ pathname: "/postform", params: { pid: post?.id } });
   };
 
   const handleDelete = async () => {
@@ -92,12 +86,10 @@ const PostDetail = () => {
         { text: "삭제", onPress: async () => {
           try {
             const { tokens } = await fetchAuthSession();
-            const response = await axios.delete(`/v1/post/${params.pid}`, {
+            await axios.delete(`/v1/post/${params.pid}`, {
               baseURL: api.baseURL,
               headers: { Authorization: tokens?.idToken?.toString() }
             });
-            console.log(response.data)
-
             router.back();
           } catch (error) {
             console.error("게시글 삭제 실패:", error);
@@ -111,19 +103,17 @@ const PostDetail = () => {
     if (commentText.trim()) {
       try {
         const { tokens } = await fetchAuthSession();
-        const response = await axios.post(`/v1/comment`, {
+        await axios.post(`/v1/comment`, {
           postid: params.pid,
           content: commentText
         }, {
           baseURL: api.baseURL,
           headers: { Authorization: tokens?.idToken?.toString() }
         });
-        console.log(response.data)
-
         setCommentText('');
         loadComments();
       } catch (error) {
-        console.error("게시글 삭제 실패:", error);
+        console.error("댓글 작성 실패:", error);
       }
     } else {
       Alert.alert("댓글을 입력해주세요.");
@@ -132,14 +122,17 @@ const PostDetail = () => {
 
   return (
     <View style={styles.container}>
+      {/* 커뮤니티 타이틀 추가 */}
+      <Text style={styles.communityTitle}>커뮤니티</Text>
+      <View style={styles.bar} />
+
       { post?.userid === userid ? 
         <View style={styles.topBar}>
-          <Ionicons name="pencil" size={24} color="black" onPress={handleEdit} style={styles.icon} />
+          <Ionicons name="pencil" size={24} color="#007AFF" onPress={handleEdit} style={styles.icon} />
           <Ionicons name="trash" size={24} color="red" onPress={handleDelete} style={styles.icon} />
         </View>
       :
-        <View style={styles.topBar}>
-        </View>
+        <View style={styles.topBar} />
       }
 
       <Text style={styles.title}>{post?.title}</Text>
@@ -158,7 +151,7 @@ const PostDetail = () => {
           />
           <Button title="작성" onPress={handleAddComment} />
         </View> 
-        { comments.length > 0 ?
+        { comments.length > 0 ? (
           <FlatList
             data={comments}
             renderItem={({ item }) => (
@@ -171,7 +164,7 @@ const PostDetail = () => {
               </View>
             )}
           />
-        : <Text></Text>}
+        ) : <Text style={styles.noCommentsText}>댓글이 없습니다.</Text>}
       </View>
     </View>
   );
@@ -180,109 +173,103 @@ const PostDetail = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    paddingTop: 40, // 상단 패딩 줄임
-    backgroundColor: '#F9FFFF',
+    padding: 20,
+    backgroundColor: '#FFF',
+  },
+  communityTitle: {
+    fontSize: 30,
+    marginTop:20,
+    marginBottom: 20,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontFamily: 'Montserrat-VariableFont_wght', 
+    color: '#007aff',
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginBottom: 15, // 아래 여백 조정
+    marginBottom: 10,
   },
   icon: {
     marginLeft: 15,
   },
   title: {
-    fontSize: 26, // 제목 크기를 약간 줄임
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 15, // 아래 여백 줄임
-    color: '#007aff',
-    fontFamily: 'Jua-Regular',
+    color: '#333333',
+    fontFamily: 'Montserrat-VariableFont_wght', 
+    marginBottom: 8,
+  },
+  bar: {
+    height: 2.5, 
+    width: '200%', 
+    backgroundColor: '#007AFF', 
+    marginBottom: 20, 
+    right: '50%', 
   },
   author: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 10, // 아래 여백 줄임
-    fontFamily: 'Jua-Regular',
+    fontSize: 15,
+    color: '#555555',
+    fontFamily: 'NanumGothic', 
+    marginBottom: 5,
   },
   content: {
     fontSize: 18,
-    marginBottom: 20,
-    fontFamily: 'Jua-Regular',
+    color: '#444444',
+    fontFamily: 'NanumGothic', 
+    marginBottom: 15,
   },
   commentSection: {
-    marginTop: 20,
+    marginTop: 25,
     borderTopWidth: 1,
-    borderTopColor: '#ccc',
+    borderTopColor: '#C0C0C0',
     paddingTop: 15,
   },
   commentSectionTitle: {
-    fontSize: 22, // 댓글 섹션 제목 크기를 약간 키움
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
-    fontFamily: 'Jua-Regular',
-    color: '#007aff',
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center', // 세로 중앙 정렬
-    marginBottom: 15, // 아래 여백 줄임
+    alignItems: 'center',
   },
   commentInput: {
-    flex: 1, // 입력 필드가 남은 공간을 차지하도록 수정
+    flex: 1,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10, // 패딩 조정
+    borderColor: '#C0C0C0',
+    borderRadius: 5,
+    padding: 10,
     marginRight: 10,
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 1,
   },
   commentContainer: {
-    flexDirection: 'column',
-    marginBottom: 10,
-    // backgroundColor: '#555',
+    marginVertical: 5,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#C0C0C0',
     borderRadius: 5,
   },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
   commentAuthor: {
-    fontSize: 18,
     fontWeight: 'bold',
-    paddingTop: 10,
-    paddingLeft: 10,
+    fontFamily: 'NanumGothic', 
   },
   commentCreated: {
-    textAlign: 'right',
-    fontSize: 14,
-    color: '#555',
-    paddingTop: 10,
-    paddingRight: 10,
+    color: '#888',
+    fontFamily: 'NanumGothic', 
   },
   commentContent: {
-    fontSize: 16,
-    paddingLeft: 20,
-    paddingBottom: 10,
+    marginTop: 5,
+    fontFamily: 'NanumGothic', 
   },
-  // comment: {
-  //   fontSize: 16,
-  //   marginVertical: 5,
-  //   padding: 10, // 패딩 조정
-  //   backgroundColor: '#ffffff',
-  //   borderRadius: 8,
-  //   shadowColor: '#000',
-  //   shadowOffset: { width: 0, height: 1 },
-  //   shadowOpacity: 0.1,
-  //   shadowRadius: 3,
-  //   elevation: 1,
-  // },
+  noCommentsText: {
+    fontStyle: 'italic',
+    color: '#888',
+    fontFamily: 'NanumGothic', 
+  },
 });
 
 export default PostDetail;

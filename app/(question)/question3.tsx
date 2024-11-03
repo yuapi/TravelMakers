@@ -19,9 +19,9 @@ export default function QthreeScreen() {
         companion: companion,
         duration: duration,
         budget: items[selectedIndex].label,
-      }})
+      }});
     }
-  }
+  };
 
   const items = [
     { label: "100만원 미만", value: 0 },
@@ -36,6 +36,7 @@ export default function QthreeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>여행 예산은 얼마인가요?</Text>
+      <View style={styles.bar} />
       <FlatList
         data={items}
         keyExtractor={(item) => item.value.toString()}
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingTop: 70,
-    backgroundColor: '#F9FFFF',
+    backgroundColor: '#FFF',
   },
   title: {
     fontSize: 28,
@@ -73,7 +74,14 @@ const styles = StyleSheet.create({
     color: '#007aff',
     textAlign: 'center',
     marginBottom: 30,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'Montserrat-VariableFont_wght',  
+  },
+  bar: {
+    height: 2.5, 
+    width: '200%', 
+    backgroundColor: '#007AFF', 
+    marginBottom: 20, 
+    right: '50%', 
   },
   item: {
     paddingVertical: 12,
@@ -89,7 +97,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#000',
     textAlign: 'center',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic',  
   },
   nextButton: {
     backgroundColor: "#007aff",
@@ -102,7 +110,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "white",
     textAlign: "center",
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic',  
   },
   bottomContainer: {
     position: "absolute",

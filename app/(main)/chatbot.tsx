@@ -79,7 +79,6 @@ export default function ChatbotScreen() {
       {
         baseURL: api.baseURL,
         headers: { Authorization: tokens?.idToken?.toString() },
-        
       });
       if (response.data.statusCode != 200) throw (response.data);
   
@@ -193,12 +192,13 @@ export default function ChatbotScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f7',
+    backgroundColor: '#FFFF',
     paddingTop: 30,
   },
   title: {
     fontSize: 30,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'Montserrat-VariableFont_wght',
+    fontWeight: 'bold', 
     color: '#007AFF',
     textAlign: 'center',
     paddingVertical: 15,
@@ -227,14 +227,16 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic',
     color: '#fff',
   },
   userMessageText: {
     color: '#fff',
+    fontFamily: 'NanumGothic',
   },
   botMessageText: {
     color: '#000',
+    fontFamily: 'NanumGothic',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingHorizontal: 20,
     fontSize: 16,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic',
     color: '#333',
   },
   sendButton: {
@@ -278,7 +280,7 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic',
   },
   modalContainer: {
     flex: 1,
@@ -294,21 +296,20 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic',
     marginBottom: 20,
   },
   modalOption: {
     fontSize: 18,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic',
     marginVertical: 10,
     color: '#007AFF',
-    textAlign: 'center',
   },
   modalCancel: {
     fontSize: 18,
-    fontFamily: 'Jua-Regular',
-    color: 'red',
+    fontFamily: 'NanumGothic',
+    marginVertical: 10,
     textAlign: 'center',
-    marginTop: 20,
+    color: '#999',
   },
 });

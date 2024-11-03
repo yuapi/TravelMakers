@@ -17,7 +17,7 @@ interface Post {
 }
 
 export default function MainScreen() {
-  const [posts, setPosts] = useState<Post[]>([])
+  const [posts, setPosts] = useState<Post[]>([]);
   const [slides, setSlides] = useState<Slide[]>([
     { src: require('@/assets/images/banner1.png'), caption: 'Example' },
     { src: require('@/assets/images/banner2.png'), caption: 'Example' },
@@ -26,20 +26,19 @@ export default function MainScreen() {
   ]);
 
   useEffect(() => {
-      loadPosts();
-  }, [])
+    loadPosts();
+  }, []);
 
-  
   const loadPosts = async () => {
     try {
       const { tokens } = await fetchAuthSession();
       const response = await axios.get('/v1/post', {
         baseURL: api.baseURL,
         headers: { Authorization: tokens?.idToken?.toString() },
-      })
+      });
       const data = JSON.parse(response.data.body);
-      console.log(data)
-      setPosts(data.postList)
+      console.log(data);
+      setPosts(data.postList);
     } catch (error) {
       console.error("게시글 로드 실패:", error);
     }
@@ -53,8 +52,8 @@ export default function MainScreen() {
         </View>
         <View style={styles.swiperContainer}>
           <Swiper style={styles.swiper} showsPagination={true} autoplay={true}>
-            { slides.map(slide => 
-              <View style={styles.slide}>
+            {slides.map(slide => 
+              <View style={styles.slide} key={slide.caption}>
                 <Image source={slide.src} style={styles.image} />
               </View>
             )}
@@ -110,6 +109,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
+    fontFamily: 'NanumGothic', 
   },
   header: {
     marginTop: 30,
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 30,
-    fontFamily: 'Montserrat-VariableFont_wght',
+    fontFamily: 'Montserrat-VariableFont_wght', 
     fontWeight: 'bold',
     color: '#007AFF',
     marginBottom: 10,
@@ -142,12 +142,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
     textAlign: 'center',
   },
   hot: {
     color: 'red',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
   },
   image: {
     width: '100%',
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   boardTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'Montserrat-VariableFont_wght', 
     marginBottom: 10,
   },
   board: {
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18, 
     fontWeight: 'bold',
-    fontFamily: 'Jua-Regular', 
+    fontFamily: 'NanumGothic', 
   },
   boardPreview: {
     marginHorizontal: 20,
@@ -198,10 +198,12 @@ const styles = StyleSheet.create({
   boardItemTitle: {
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'NanumGothic', 
   },
   boardItemContent: {
     fontSize: 14,
     color: '#666',
+    fontFamily: 'NanumGothic', 
   },
   footer: {
     flexDirection: 'row',
@@ -214,6 +216,4 @@ const styles = StyleSheet.create({
   navIcon: {
     alignItems: 'center',
   },
-
 });
-

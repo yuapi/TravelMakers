@@ -327,10 +327,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+    fontFamily: 'Montserrat-VariableFont_wght',
   },
   description: {
     fontSize: 14,
     marginBottom: 10,
+    fontFamily: 'NanumGothic', 
   },
   loadingContainer: {
     flex: 1,
@@ -400,14 +402,14 @@ const styles = StyleSheet.create({
 //     marginBottom: 15,
 //   },
 //   button: {
-//     backgroundColor: '#28a745',
+//     backgroundColor: '#007bff',
+//     borderRadius: 5,
 //     paddingVertical: 10,
-//     borderRadius: 8,
-//     alignItems: 'center',
+//     paddingHorizontal: 15,
 //   },
 //   linkText: {
-//     color: '#fff',
-//     fontSize: 18,
+//     color: '#ffffff',
+//     textAlign: 'center',
 //   },
 });
 

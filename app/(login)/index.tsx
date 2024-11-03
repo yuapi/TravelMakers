@@ -29,7 +29,8 @@ Amplify.configure({
 
 export default function LoginScreen() {
 	const [fontsLoaded] = useFonts({
-		'Jua-Regular': require('../../assets/fonts/Jua-Regular.ttf'),
+		'Montserrat-VariableFont_wght': require('../../assets/fonts/Montserrat-VariableFont_wght.ttf'),
+		'NanumGothic': require('../../assets/fonts/NanumGothic.otf'),
 	});
 
 	useEffect(() => {
@@ -41,7 +42,6 @@ export default function LoginScreen() {
 			const currentUser = await getCurrentUser();
 			console.log(currentUser)
 			router.replace('/main')
-
 		} catch (error) {
 			console.log("Not signed in");
 		}
@@ -81,17 +81,17 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: '#F7FFFF',
+		backgroundColor: '#FFF', 
 		paddingBottom: 40,
-	},
+	},	
 	backgroundLogo: {
 		position: 'absolute',
 		width: width,
 		height: height * 0.6,
-		opacity: 0.1,
+		opacity: 0.3, 
 		resizeMode: 'contain',
 		top: 0,
-	},
+	},	
 	logoContainer: {
 		alignItems: 'center',
 		marginBottom: 40,
@@ -99,13 +99,14 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		fontSize: 55,
-		fontFamily: 'Jua-Regular',
+		fontFamily: 'Montserrat-VariableFont_wght',
+		fontWeight: 'bold',
 		color: '#007AFF',
 		top: -60,
 	},
 	subtitle: {
 		fontSize: 18,
-		fontFamily: 'Jua-Regular',
+		fontFamily: 'NanumGothic',
 		color: '#333',
 		top: -50,
 	},
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
 	questionText: {
 		fontSize: 23,
 		color: '#fff',
-		fontFamily: 'Jua-Regular',
+		fontFamily: 'NanumGothic',
 	},
 	loginButton: {
 		width: width * 0.9,
@@ -140,16 +141,17 @@ const styles = StyleSheet.create({
 	},
 	userName: {
 		fontSize: 20,
-		fontFamily: 'Jua-Regular',
+		fontFamily: 'NanumGothic',
 		color: '#3E2723',
 	},
 	footerText: {
 		fontSize: 16,
 		color: '#747474',
+		fontFamily: 'NanumGothic',
 		bottom: -40,
 	},
 	snsText: {
-		fontFamily: 'Jua-Regular',
+		fontFamily: 'NanumGothic',
 		color: '#747474',
 	},
 	chatbotText: {
@@ -157,6 +159,6 @@ const styles = StyleSheet.create({
 		color: '#000',
 		position: 'absolute',
 		bottom: 10,
-		fontFamily: 'Jua-Regular',
+		fontFamily: 'NanumGothic',
 	},
 });

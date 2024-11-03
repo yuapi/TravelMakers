@@ -7,16 +7,12 @@ import axios from 'axios';
 import { api } from '@/config.json';
 import { fetchAuthSession, getCurrentUser } from '@aws-amplify/auth';
 
-interface PostModify {
-  id: number;
-  title: string;
-  content: string;
-}
-
 const PostForm = () => {
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [fontsLoaded] = useFonts({
+    'Montserrat': require('../../assets/fonts/Montserrat-VariableFont_wght.ttf'),
+    'NanumGothic': require('../../assets/fonts/NanumGothic.otf'),
     'Jua-Regular': require('../../assets/fonts/Jua-Regular.ttf'),
   });
 
@@ -24,11 +20,8 @@ const PostForm = () => {
   const params = useLocalSearchParams();
 
   useEffect(() => {
-    setTitle('');
-    setContent('');
-
     if (params?.pid) {
-      getPostDetail(Number(params.pid))
+      getPostDetail(Number(params.pid));
     }
   }, []);
 
@@ -41,9 +34,9 @@ const PostForm = () => {
         headers: { Authorization: tokens?.idToken?.toString() }
       });
       const data = JSON.parse(response.data.body);
-  
-      if (data.userid != currentUser.userId) {
-        Alert.alert("잘못된 접근입니다.")
+
+      if (data.userid !== currentUser.userId) {
+        Alert.alert("잘못된 접근입니다.");
         router.back();
         return;
       }
@@ -82,7 +75,6 @@ const PostForm = () => {
           headers: { Authorization: tokens?.idToken?.toString() }
         });
       }
-      console.log(response.data);
       router.back();
     } catch (error) {
       console.error("게시글 저장 실패:", error);
@@ -97,6 +89,7 @@ const PostForm = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.title}>게시글 작성</Text>
+        <View style={styles.bar} />
         <Text style={styles.label}>제목</Text>
         <TextInput
           style={styles.input}
@@ -105,7 +98,7 @@ const PostForm = () => {
         />
         <Text style={styles.label}>내용</Text>
         <TextInput
-          style={styles.input}
+          style={styles.inputContent}
           value={content}
           onChangeText={setContent}
           multiline
@@ -122,28 +115,46 @@ const PostForm = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F9FFFF',
+    backgroundColor: '#FFF',
   },
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#F7FFFF',
+    backgroundColor: '#FFFF',
   },
   title: {
     fontSize: 28,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'Montserrat-VariableFont_wght', 
     color: '#007AFF',
+    fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
   },
+  bar: {
+    height: 2.5, 
+    width: '200%', 
+    backgroundColor: '#007AFF', 
+    marginBottom: 20, 
+    right: '50%', 
+  },
   label: {
-    fontSize: 18, // 레이블 크기를 조금 키움
+    fontSize: 18,
     marginBottom: 5,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
     color: '#555',
   },
   input: {
-    height: 80, // 입력 필드 높이를 줄임
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+    backgroundColor: '#ffffff',
+    fontFamily: 'NanumGothic', 
+  },
+  inputContent: {
+    height: 80,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,
@@ -155,10 +166,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 1,
+    fontFamily: 'NanumGothic', 
   },
   saveButton: {
     marginTop: 20,
-    padding: 14, // 버튼 패딩을 조금 늘림
+    padding: 14,
     backgroundColor: '#007aff',
     borderRadius: 8,
     alignItems: 'center',
@@ -166,9 +178,9 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 16, // 버튼 텍스트 크기를 줄임
+    fontSize: 16,
     fontWeight: '700',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic',
   },
 });
 
