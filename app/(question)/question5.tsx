@@ -33,6 +33,7 @@ export default function QfiveScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>어떤 여행 일정을 선호하나요?</Text>
+      <View style={styles.bar} />
       <FlatList
         data={items}
         keyExtractor={(item) => item.value.toString()}
@@ -51,9 +52,6 @@ export default function QfiveScreen() {
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.nextButton} onPress={handleResult}>
           <Text style={styles.bottomText}>다음</Text>
-          {/* <Link href={{ pathname: '/question2', params: { companion: items[selectedIndex]}}}>
-            <Text style={styles.bottomText}>다음</Text>
-          </Link> */}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -65,7 +63,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingTop: 70,
-    backgroundColor: '#F9FFFF',
+    backgroundColor: '#FFF',
   },
   title: {
     fontSize: 28,
@@ -73,7 +71,14 @@ const styles = StyleSheet.create({
     color: '#007aff',
     textAlign: 'center',
     marginBottom: 30,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'Montserrat-VariableFont_wght', 
+  },
+  bar: {
+    height: 2.5, 
+    width: '200%', 
+    backgroundColor: '#007AFF',
+    marginBottom: 20, 
+    right: '50%', 
   },
   item: {
     paddingVertical: 12,
@@ -89,7 +94,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#000',
     textAlign: 'center',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
   },
   nextButton: {
     backgroundColor: "#007aff",
@@ -102,7 +107,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "white",
     textAlign: "center",
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
   },
   bottomContainer: {
     position: "absolute",

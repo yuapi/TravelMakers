@@ -1,67 +1,178 @@
-import React, { useEffect, useState } from 'react'; // React 및 필요한 훅 가져오기
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native'; // React Native의 기본 컴포넌트 가져오기
-import AsyncStorage from '@react-native-async-storage/async-storage'; // 비동기 저장소를 위한 AsyncStorage 가져오기
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import axios from 'axios';
+import { api } from '@/config.json';
+import { fetchAuthSession } from '@aws-amplify/auth';
+import { useRouter } from 'expo-router';
+import { Picker } from '@react-native-picker/picker';
 
-const Profile = () => { // Profile 컴포넌트 정의
-  const [nickname, setNickname] = useState(''); // 닉네임 상태 // 상태 변수를 설정 (닉네임과 이메일)
-  const [email, setEmail] = useState(''); // 이메일 상태
+interface OriginalData {
+  nickname: string;
+  gender: string;
+  birthday: string;
+}
 
-  useEffect(() => { // 컴포넌트가 마운트될 때 사용자 데이터를 로드하는 useEffect 훅
-    const loadUserData = async () => {
-      const resUser = await AsyncStorage.getItem('user'); // AsyncStorage에서 사용자 데이터를 가져옴
-      if (resUser) {
-        const userdata = JSON.parse(resUser); // JSON 문자열을 객체로 변환
-        setNickname(userdata.nickname); // 닉네임 상태 업데이트
-        setEmail(userdata.email); // 이메일 상태 업데이트
+export default function ProfileEdit() {
+  const [nickname, setNickname] = useState('');
+  const [gender, setGender] = useState('선택하세요');
+  const [birthday, setBirthday] = useState('');
+  const [isBirthdayPrivate, setIsBirthdayPrivate] = useState(false);
+  const [originalData, setOriginalData] = useState<OriginalData | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const { tokens } = await fetchAuthSession();
+        const response = await axios.get('/v1/user', {
+          baseURL: api.baseURL,
+          headers: { Authorization: tokens?.idToken?.toString() },
+        });
+        const data = JSON.parse(response.data.body);
+
+        if (data) {
+          setNickname(data.nickname || '');
+          setGender(data.gender || '선택하세요');
+          setBirthday(data.birthday || '');
+          setIsBirthdayPrivate(!data.birthday);
+          setOriginalData(data);
+        }
+      } catch (error) {
+        console.error('Error from fetching user data:', error);
       }
     };
-    loadUserData(); // 사용자 데이터 로드 함수 호출
-  }, []); // 빈 배열을 의존성으로 주어, 컴포넌트가 처음 렌더링될 때만 호출됨
+    fetchUserData();
+  }, []);
 
-  const handleSave = async () => {  // 사용자 정보를 저장하는 함수
-    const updatedUserData = { nickname, email }; // 현재 상태의 닉네임과 이메일로 객체 생성
-    await AsyncStorage.setItem('user', JSON.stringify(updatedUserData)); // AsyncStorage에 사용자 데이터 저장
-    alert('정보가 저장되었습니다!'); // 저장 완료 알림
-    // 돌아가기 기능은 필요 없으니 주석 처리했습니다.
+  const handleSave = async () => {
+    try {
+      const { tokens } = await fetchAuthSession();
+      const newNickname = nickname.trim() === '' ? originalData?.nickname : nickname.trim();
+      const newGender = gender === '선택하세요' ? originalData?.gender : gender;
+      const newBirthday = isBirthdayPrivate ? '' : (birthday.trim() === '' ? originalData?.birthday : birthday.trim());
+
+      const response = await axios.put(
+        '/v1/user',
+        { nickname: newNickname, gender: newGender, birthday: newBirthday },
+        {
+          baseURL: api.baseURL,
+          headers: { Authorization: tokens?.idToken?.toString() },
+        }
+      );
+
+      if (response.status === 200) {
+        Alert.alert('알림', '정보가 업데이트되었습니다.');
+        router.back();
+      }
+    } catch (error) {
+      console.error('Error updating user information:', error);
+      Alert.alert('오류', '정보 업데이트에 실패했습니다.');
+    }
   };
 
-  return ( // 컴포넌트의 렌더링 부분
-    <View style={styles.container}> {/* 전체를 감싸는 컨테이너 */}
-      <Text style={styles.label}>닉네임</Text> {/* 닉네임 레이블 */}
-      <TextInput
-        style={styles.input} // 입력 필드 스타일
-        value={nickname} // 닉네임 상태값 설정
-        onChangeText={setNickname} // 텍스트가 변경될 때 상태 업데이트
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>개인정보 수정</Text>
+      <View style={styles.bar} />
+
+      <Text style={styles.label}>닉네임</Text>
+      <TextInput value={nickname} onChangeText={setNickname} style={styles.input} />
+
+      <Text style={styles.label}>성별</Text>
+      <Picker
+        selectedValue={gender}
+        style={styles.picker}
+        onValueChange={(itemValue) => setGender(itemValue)}
+      >
+        <Picker.Item label="선택하세요" value="선택하세요" />
+        <Picker.Item label="남" value="Male" />
+        <Picker.Item label="여" value="Female" />
+        <Picker.Item label="비공개" value="Private" />
+      </Picker>
+
+      <Text style={styles.label}>생년월일</Text>
+      <TextInput 
+        value={isBirthdayPrivate ? '' : birthday} 
+        onChangeText={setBirthday} 
+        style={styles.input} 
+        placeholder="YYYY-MM-DD" 
+        editable={!isBirthdayPrivate} 
       />
-      <Text style={styles.label}>이메일</Text> {/* 이메일 레이블 */}
-      <TextInput
-        style={styles.input} // 입력 필드 스타일
-        value={email} // 이메일 상태값 설정
-        onChangeText={setEmail} // 텍스트가 변경될 때 상태 업데이트
-        keyboardType="email-address" // 이메일 입력을 위한 키보드 타입 설정
-      />
-      <Button title="저장" onPress={handleSave} /> {/* 저장 버튼, 클릭 시 handleSave 함수 호출 */}
+
+      <Text style={styles.label}>생년월일 공개 여부</Text>
+      <Picker
+        selectedValue={isBirthdayPrivate ? '비공개' : '공개'}
+        style={styles.picker}
+        onValueChange={(itemValue) => setIsBirthdayPrivate(itemValue === '비공개')}
+      >
+        <Picker.Item label="공개" value="공개" />
+        <Picker.Item label="비공개" value="비공개" />
+      </Picker>
+
+      <TouchableOpacity style={styles.button} onPress={handleSave}>
+        <Text style={styles.buttonText}>저장하기</Text>
+      </TouchableOpacity>
     </View>
   );
-};
+}
 
-const styles = StyleSheet.create({ // 스타일 정의
+const styles = StyleSheet.create({
   container: {
-    flex: 1, // 전체 화면을 차지하도록 설정 (세로 방향으로 공간을 확장)
-    padding: 16, // 컨테이너 내부 여백을 16으로 설정
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#FFF', 
+  },
+  title: {
+    fontSize: 30,
+    marginTop: 10,
+    marginBottom: 20,
+    textAlign: 'center',
+    fontWeight: 'bold',  
+    fontFamily: 'Montserrat-VariableFont_wght', 
+    color: '#007aff', 
+  },
+  bar: {
+    height: 2.5, 
+    width: '200%', 
+    backgroundColor: '#007AFF', 
+    marginBottom: 20, 
+    right: '50%', 
   },
   label: {
-    marginBottom: 8, // 레이블과 다음 요소 간의 간격을 8로 설정
-    fontSize: 16, // 레이블 텍스트의 글꼴 크기를 16으로 설정
-    fontWeight: 'bold', // 레이블 텍스트를 굵게 설정
+    fontSize: 18,
+    marginBottom: 8,
+    fontFamily: 'NanumGothic', 
+    color: '#333', 
   },
   input: {
-    marginBottom: 16, // 입력 필드와 다음 요소 간의 간격을 16으로 설정
-    padding: 12, // 입력 필드 내부 여백을 12로 설정
-    borderWidth: 1, // 입력 필드 테두리 두께 설정
-    borderColor: '#ccc', // 입력 필드 테두리 색상을 연한 회색으로 설정
-    borderRadius: 8, // 입력 필드 모서리를 둥글게 설정
+    borderWidth: 1,
+    borderColor: '#E6E6E6',
+    padding: 10,
+    marginBottom: 16,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    fontFamily: 'NanumGothic', 
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E6E6E6', 
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  button: {
+    backgroundColor: '#007aff', 
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'NanumGothic', 
   },
 });
-
-export default Profile; // Profile 컴포넌트 내보내기

@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, FlatList, Dimensions, SafeAreaView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { Title } from 'react-native-paper';
+import * as Font from 'expo-font';
 
 export default function QfourScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const { companion, duration, budget } = useLocalSearchParams();
+
+  useEffect(() => {
+    const loadFonts = async () => {
+      await Font.loadAsync({
+        'Montserrat': require('@/assets/fonts/Montserrat-VariableFont_wght.ttf'),
+        'NanumGothic': require('@/assets/fonts/NanumGothic.otf'),
+      });
+    };
+
+    loadFonts();
+  }, []);
 
   const handleItemPress = (index: number) => {
     setSelectedIndex(index);
@@ -20,9 +31,9 @@ export default function QfourScreen() {
         duration: duration,
         budget: budget,
         theme: items[selectedIndex].label,
-      }})
+      }});
     }
-  }
+  };
 
   const items = [
     { label: "자연여행", value: 0 },
@@ -37,6 +48,7 @@ export default function QfourScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>원하는 여행 테마는 무엇인가요?</Text>
+      <View style={styles.bar} />
       <FlatList
         data={items}
         keyExtractor={(item) => item.value.toString()}
@@ -53,11 +65,8 @@ export default function QfourScreen() {
         )}
       />
       <View style={styles.bottomContainer}>
-      <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.bottomText}>다음</Text>
-          {/* <Link href={{ pathname: '/question2', params: { companion: items[selectedIndex]}}}>
-            <Text style={styles.bottomText}>다음</Text>
-          </Link> */}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -69,15 +78,22 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingTop: 70,
-    backgroundColor: '#F9FFFF',
+    backgroundColor: '#FFF',
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
     color: '#007aff',
     textAlign: 'center',
     marginBottom: 30,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'Montserrat-VariableFont_wght', 
+  },
+  bar: {
+    height: 2.5, 
+    width: '200%', 
+    backgroundColor: '#007AFF', 
+    marginBottom: 20, 
+    right: '50%', 
   },
   item: {
     paddingVertical: 12,
@@ -93,7 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#000',
     textAlign: 'center',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
   },
   nextButton: {
     backgroundColor: "#007aff",
@@ -106,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "white",
     textAlign: "center",
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
   },
   bottomContainer: {
     position: "absolute",

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, FlatList, Dimensions, SafeAreaView } from 'react-native';
-import { Text, View } from '@/components/Themed';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { Title } from 'react-native-paper';
+import { StyleSheet, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
+import { Text, View} from '@/components/Themed';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 export default function QtwoScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -18,9 +17,9 @@ export default function QtwoScreen() {
       router.replace({ pathname: '/question3', params: { 
         companion: companion,
         duration: items[selectedIndex].label,
-      }})
+      }});
     }
-  }
+  };
 
   const items = [
     { label: "당일치기", value: 0 },
@@ -35,6 +34,7 @@ export default function QtwoScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>여행 기간은 어느정도인가요?</Text>
+      <View style={styles.bar} />
       <FlatList
         data={items}
         keyExtractor={(item) => item.value.toString()}
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingTop: 70,
-    backgroundColor: '#F9FFFF',
+    backgroundColor: '#FFF',
   },
   title: {
     fontSize: 28,
@@ -72,7 +72,14 @@ const styles = StyleSheet.create({
     color: '#007aff',
     textAlign: 'center',
     marginBottom: 30,
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'Montserrat-VariableFont_wght', 
+  },
+  bar: {
+    height: 2.5, 
+    width: '200%', 
+    backgroundColor: '#007AFF', 
+    marginBottom: 20, 
+    right: '50%', 
   },
   item: {
     paddingVertical: 12,
@@ -88,7 +95,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#000',
     textAlign: 'center',
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
   },
   nextButton: {
     backgroundColor: "#007aff",
@@ -101,7 +108,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "white",
     textAlign: "center",
-    fontFamily: 'Jua-Regular',
+    fontFamily: 'NanumGothic', 
   },
   bottomContainer: {
     position: "absolute",
