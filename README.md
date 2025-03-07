@@ -97,5 +97,5 @@
 </details>
 <details>
   <summary><h3>추천 시퀀스</h3></summary>
-  <img src="https://github.com/yuapi/TravelMakers/blob/main/assets/doc/RecSeqnence.png">
+  <img src="https://github.com/yuapi/TravelMakers/blob/main/assets/doc/RecSequence.png">
 </details>
