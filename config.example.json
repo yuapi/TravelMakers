@@ -1,0 +1,7 @@
+{
+	"Cognito": {
+		"userPoolClientId": "<UserPool-Client-Id>",
+		"userPoolId": "<UserPool-Id>",
+		"domain": "<OAuth-Domain>"
+	}
+}
